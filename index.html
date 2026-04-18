@@ -165,8 +165,8 @@ footer b{color:var(--accent)}
 const SHEET_ID = "1qhgnCg93rq06yeDTefnyZHI7IVhg-rO1r1OQiwe6jXU";
 const GID = "0";
 // 用 gviz 端點（對瀏覽器 CORS 友善，避開 /export 的 307 跳轉）
-// 回傳格式：google.visualization.Query.setResponse({...JSON...});
-const GVIZ_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&gid=${GID}`;
+// headers=0 告訴 Google 不要自動把第一列當 header（此表前 5 列是說明文字）
+const GVIZ_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&gid=${GID}&headers=0`;
 const DIMS = [
   {key:"ENG", label:"熱情度", desc:"老師單方面的表現/聲音感染力", color:"#ef476f"},
   {key:"PRO", label:"專業度", desc:"教學正確性、系統操作熟練度、糾錯能力", color:"#4cc9f0"},
@@ -216,37 +216,45 @@ async function fetchData(){
 
 // 將 gviz table 轉換為與原 processRows 相容的資料結構
 function processGvizTable(table){
-  // table.cols = [{label, type, ...}, ...]
-  // table.rows = [{c: [{v, f}, ...]}, ...]
   if(!table || !table.rows) throw new Error("表單無資料");
 
-  // 把 gviz rows 轉成 2D array (每個 cell 取 v，string 類取 v 或 f)
+  // headers=0 模式下，cols 通常沒用（或 label 為空），實際資料全在 rows
+  // 直接把每個 row 的 c[] 轉成字串陣列
   const data = [];
-  // cols 的 label 有可能是 header（第一列），但前幾列是說明文字，我們仍需遍歷全部 rows 找「DEMO日期」
-  // gviz 預設會把第一列當 header，但因為此表前 5 列是說明，gviz 的 header 會是一團亂，我們手動找
-  // 先把 cols 也塞進 data[0]
-  if(table.cols && table.cols.length){
-    data.push(table.cols.map(c => c.label || ""));
-  }
   table.rows.forEach(r=>{
+    if(!r || !r.c) return;
     const row = r.c.map(cell=>{
       if(cell == null) return "";
-      if(cell.f != null) return cell.f;  // 格式化字串（日期會是 "2026/2/25" 這種）
+      // 日期類型：gviz 會把 v 設成 "Date(yyyy,m,d)" 字串，而 f 是已格式化的 "yyyy/m/d"
+      // 所以優先用 f；若沒有 f 則嘗試解析 v
+      if(cell.f != null && cell.f !== "") return String(cell.f);
       if(cell.v == null) return "";
-      return String(cell.v);
+      // 處理 gviz 的 "Date(2026,1,25)" 格式（month 是 0-indexed）
+      const v = cell.v;
+      if(typeof v === "string"){
+        const dm = v.match(/^Date\((\d+),(\d+),(\d+)(?:,\d+,\d+,\d+)?\)$/);
+        if(dm) return `${dm[1]}/${parseInt(dm[2])+1}/${parseInt(dm[3])}`;
+      }
+      return String(v);
     });
     data.push(row);
   });
 
+  if(!data.length) throw new Error("表單資料為空");
   processRows(data);
 }
 
 function processRows(data){
   let headerIdx = -1;
   for(let i=0;i<data.length;i++){
-    if(data[i][0] && String(data[i][0]).trim() === "DEMO日期"){ headerIdx = i; break; }
+    const cell = data[i] && data[i][0] ? String(data[i][0]).trim() : "";
+    if(cell === "DEMO日期"){ headerIdx = i; break; }
   }
-  if(headerIdx === -1) throw new Error("找不到標題列 (DEMO日期)");
+  if(headerIdx === -1){
+    // 把前 10 列第 1 欄的內容列出來幫助 debug
+    const preview = data.slice(0,10).map((r,i)=>`[${i}] "${(r && r[0])? String(r[0]).slice(0,30): "(空)"}"`).join(" / ");
+    throw new Error(`找不到標題列 (DEMO日期)。前 10 列首欄預覽：${preview}`);
+  }
 
   const rows = [];
   for(let i=headerIdx+1;i<data.length;i++){
