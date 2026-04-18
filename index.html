@@ -1,0 +1,919 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"/>
+<title>ETalking Demo 老師評比分析</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Noto+Serif+TC:wght@400;600;900&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#0b0d10; --bg-2:#13171c; --panel:#171b21; --panel-2:#1e242c;
+  --line:#262d36; --line-2:#323b47;
+  --text:#e8ecf1; --text-dim:#9aa4b2; --text-faint:#5b6472;
+  --accent:#ffd166; --accent-2:#ef476f;
+  --good:#06d6a0; --warn:#ffb545; --bad:#ef476f; --info:#4cc9f0; --purple:#b388eb;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:"Noto Sans TC","Helvetica Neue",sans-serif;font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased}
+body{background:radial-gradient(1200px 600px at 10% -10%, rgba(255,209,102,.05), transparent 60%),radial-gradient(900px 500px at 110% 10%, rgba(239,71,111,.04), transparent 60%),var(--bg);min-height:100vh}
+.wrap{max-width:1480px;margin:0 auto;padding:28px 32px 80px}
+header{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;padding-bottom:20px;border-bottom:1px solid var(--line);margin-bottom:24px;flex-wrap:wrap}
+h1{font-family:"Noto Serif TC",serif;font-weight:900;font-size:34px;line-height:1.1;margin:0;letter-spacing:-.5px}
+h1 small{display:block;font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--text-faint);font-weight:400;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px}
+.meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.meta .chip{font-family:"JetBrains Mono",monospace;font-size:11px;padding:6px 10px;border:1px solid var(--line-2);border-radius:2px;color:var(--text-dim);background:var(--panel)}
+.meta .chip b{color:var(--accent);font-weight:500}
+.reload-btn{appearance:none;border:1px solid var(--line-2);background:var(--panel);color:var(--text);padding:8px 14px;font-family:"JetBrains Mono",monospace;font-size:11px;cursor:pointer;letter-spacing:1px;text-transform:uppercase;transition:.15s}
+.reload-btn:hover{background:var(--accent);color:#000;border-color:var(--accent)}
+.reload-btn:disabled{opacity:.5;cursor:wait}
+.kpi{display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin-bottom:24px}
+.kpi .cell{background:var(--panel);padding:16px 18px}
+.kpi .k{font-family:"JetBrains Mono",monospace;font-size:10px;color:var(--text-faint);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px}
+.kpi .v{font-family:"Noto Serif TC",serif;font-weight:700;font-size:26px;line-height:1}
+.kpi .v small{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--text-dim);font-weight:400;margin-left:4px}
+.layout{display:grid;grid-template-columns:320px 1fr;gap:24px}
+@media(max-width:960px){.layout{grid-template-columns:1fr}}
+.tlist{background:var(--panel);border:1px solid var(--line);max-height:82vh;overflow-y:auto;position:sticky;top:20px}
+.tlist h2{font-family:"JetBrains Mono",monospace;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text-faint);padding:14px 16px;margin:0;border-bottom:1px solid var(--line);background:var(--bg-2);position:sticky;top:0;z-index:2}
+.tlist .sort-btns{display:flex;border-bottom:1px solid var(--line);background:var(--bg-2);position:sticky;top:37px;z-index:2}
+.tlist .sort-btns button{flex:1;appearance:none;background:none;border:none;border-right:1px solid var(--line);color:var(--text-faint);padding:8px 4px;font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:1px;cursor:pointer;text-transform:uppercase}
+.tlist .sort-btns button:last-child{border-right:none}
+.tlist .sort-btns button.active{color:var(--accent);background:var(--panel)}
+.tlist ul{list-style:none;margin:0;padding:0}
+.tlist li{border-bottom:1px solid var(--line)}
+.tlist li button{width:100%;appearance:none;background:none;border:none;color:inherit;text-align:left;cursor:pointer;padding:12px 16px;display:flex;align-items:center;gap:12px;transition:.1s;font-family:inherit}
+.tlist li button:hover{background:var(--panel-2)}
+.tlist li.active button{background:var(--panel-2);box-shadow:inset 3px 0 0 var(--accent)}
+.tlist .tname{flex:1;min-width:0;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
+.tlist .tmeta{font-family:"JetBrains Mono",monospace;font-size:10px;color:var(--text-faint)}
+.tlist .tscore{font-family:"JetBrains Mono",monospace;font-size:13px;font-weight:700;min-width:32px;text-align:right}
+.tlist .tbar{display:block;height:2px;margin-top:3px;background:var(--line-2);position:relative;overflow:hidden}
+.tlist .tbar::after{content:"";position:absolute;left:0;top:0;bottom:0;background:var(--accent);width:var(--p,0%)}
+.tlist .all{background:var(--bg-2)}
+.tlist .all button{padding:14px 16px}
+.tlist .all.active button{box-shadow:inset 3px 0 0 var(--accent-2)}
+.main{min-width:0}
+.detail-head{margin-bottom:20px}
+.detail-head .crumb{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--text-faint);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px}
+.detail-head h2{font-family:"Noto Serif TC",serif;font-weight:900;font-size:32px;margin:0;line-height:1}
+.detail-head .sub{margin-top:8px;color:var(--text-dim);font-size:13px;display:flex;gap:16px;flex-wrap:wrap}
+.detail-head .sub span{font-family:"JetBrains Mono",monospace;font-size:11px}
+.detail-head .sub span b{color:var(--text);font-weight:500}
+.grid{display:grid;gap:20px}
+.g2{grid-template-columns:1fr 1fr}
+.g3{grid-template-columns:repeat(3,1fr)}
+@media(max-width:900px){.g2,.g3{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);padding:20px}
+.card h3{font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text-faint);margin:0 0 14px;font-weight:700;display:flex;align-items:center;gap:10px}
+.card h3::before{content:"";display:block;width:6px;height:6px;background:var(--accent);border-radius:50%}
+.card.bad h3::before{background:var(--bad)}
+.card.good h3::before{background:var(--good)}
+.card.info h3::before{background:var(--info)}
+.card.purple h3::before{background:var(--purple)}
+.card h3 .sub{margin-left:auto;font-size:9px;color:var(--text-faint);letter-spacing:.5px;text-transform:none;font-weight:400}
+.chart-box{position:relative;height:320px}
+.chart-box.tall{height:380px}
+.stat-item{padding:10px 0;border-bottom:1px dashed var(--line)}
+.stat-item:last-child{border-bottom:none}
+.stat-item .label{display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap}
+.stat-item .dim-tag{font-family:"JetBrains Mono",monospace;font-size:10px;padding:2px 8px;border:1px solid var(--line-2);color:var(--text-dim);letter-spacing:1px}
+.stat-item .dim-name{font-weight:600;color:var(--text);font-size:14px}
+.stat-item .metric{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--text-faint);margin-left:auto}
+.stat-item .metric b{color:var(--accent);font-weight:500}
+.stat-item.pos .dim-name{color:var(--good)}
+.stat-item.neg .dim-name{color:var(--bad)}
+.stat-item.pos .metric b{color:var(--good)}
+.stat-item.neg .metric b{color:var(--bad)}
+.stat-item .desc{font-size:12px;color:var(--text-dim);line-height:1.6}
+.stat-item .desc b{color:var(--text);font-weight:500}
+.empty{color:var(--text-faint);font-size:12px;font-style:italic;padding:8px 0}
+.dist-wrap{margin-top:6px}
+.dist-row{display:grid;grid-template-columns:40px 1fr 60px;gap:6px;align-items:center;margin-bottom:3px;font-family:"JetBrains Mono",monospace;font-size:10px}
+.dist-row .dist-bar{height:12px;background:var(--bg-2);position:relative;border:1px solid var(--line)}
+.dist-row .dist-bar::after{content:"";position:absolute;left:0;top:0;bottom:0;background:var(--accent);width:var(--p,0%)}
+.dist-row.s1 .dist-bar::after{background:var(--bad)}
+.dist-row.s2 .dist-bar::after{background:#f07167}
+.dist-row.s3 .dist-bar::after{background:var(--warn)}
+.dist-row.s4 .dist-bar::after{background:var(--accent)}
+.dist-row.s5 .dist-bar::after{background:var(--good)}
+.dist-row .dist-label{color:var(--text-dim)}
+.dist-row .dist-val{color:var(--text);text-align:right}
+.fb-list{max-height:440px;overflow-y:auto}
+.fb-item{padding:12px 14px;border-left:2px solid var(--line-2);margin-bottom:10px;background:var(--bg-2)}
+.fb-item .fb-meta{font-family:"JetBrains Mono",monospace;font-size:10px;color:var(--text-faint);margin-bottom:4px;display:flex;gap:10px;flex-wrap:wrap;letter-spacing:.5px}
+.fb-item .fb-meta b{color:var(--text-dim)}
+.fb-item .fb-text{color:var(--text);font-size:13px;line-height:1.6}
+.fb-item.neg{border-left-color:var(--bad)}
+.fb-item.pos{border-left-color:var(--good)}
+.fb-list::-webkit-scrollbar,.tlist::-webkit-scrollbar{width:6px}
+.fb-list::-webkit-scrollbar-thumb,.tlist::-webkit-scrollbar-thumb{background:var(--line-2)}
+.fb-list::-webkit-scrollbar-track,.tlist::-webkit-scrollbar-track{background:var(--bg-2)}
+.dim-grid{display:grid;gap:12px}
+.dim-row{display:grid;grid-template-columns:72px 1fr 56px;gap:12px;align-items:center}
+.dim-row .dname{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--text-dim);letter-spacing:.5px;line-height:1.3}
+.dim-row .dbar{height:10px;background:var(--bg-2);position:relative;border:1px solid var(--line)}
+.dim-row .dbar::after{content:"";position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,var(--accent-2),var(--accent));width:var(--p,0%);transition:width .6s}
+.dim-row .dbar .team-mark{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--info);left:var(--tp,0%)}
+.dim-row .dval{font-family:"JetBrains Mono",monospace;font-size:13px;font-weight:700;text-align:right;line-height:1.2}
+.dim-row .dval.low{color:var(--bad)}
+.dim-row .dval.mid{color:var(--warn)}
+.dim-row .dval.high{color:var(--good)}
+.legend-mini{font-family:"JetBrains Mono",monospace;font-size:10px;color:var(--text-faint);margin-top:12px;display:flex;gap:16px;flex-wrap:wrap}
+.legend-mini span{display:flex;align-items:center;gap:5px}
+.legend-mini i{width:10px;height:2px;background:var(--info);display:inline-block}
+.error{background:rgba(239,71,111,.1);border:1px solid var(--bad);padding:16px;color:var(--text);margin-bottom:20px}
+.error b{color:var(--bad)}
+footer{margin-top:48px;padding-top:20px;border-top:1px solid var(--line);text-align:center;color:var(--text-faint);font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+footer b{color:var(--accent)}
+.insight-box{background:var(--bg-2);border-left:3px solid var(--info);padding:12px 14px;font-size:13px;line-height:1.7;color:var(--text-dim)}
+.insight-box b{color:var(--text);font-weight:500}
+.insight-box .trend-up{color:var(--good);font-weight:500}
+.insight-box .trend-down{color:var(--bad);font-weight:500}
+.insight-box .trend-flat{color:var(--accent);font-weight:500}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div>
+    <h1><small>ETALKING / SALES INTERNAL TOOL</small>Demo 老師評比分析</h1>
+  </div>
+  <div class="meta">
+    <span class="chip">資料來源 <b>DEMO老師反饋評比表</b></span>
+    <span class="chip" id="dataStatus">載入中…</span>
+    <button class="reload-btn" id="reloadBtn">重新載入</button>
+  </div>
+</header>
+
+<div class="kpi" id="kpi"></div>
+
+<div id="errorBox"></div>
+
+<div class="layout">
+  <aside class="tlist" id="tlist"></aside>
+  <main class="main" id="main"></main>
+</div>
+
+<footer>BUILT FOR WOLF / ETALKING TAIPEI / REAL-TIME GOOGLE SHEETS SYNC · PURE DATA ANALYSIS</footer>
+</div>
+
+<script>
+const SHEET_ID = "1qhgnCg93rq06yeDTefnyZHI7IVhg-rO1r1OQiwe6jXU";
+const GID = "0";
+// 用 gviz 端點（對瀏覽器 CORS 友善，避開 /export 的 307 跳轉）
+// 回傳格式：google.visualization.Query.setResponse({...JSON...});
+const GVIZ_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&gid=${GID}`;
+const DIMS = [
+  {key:"ENG", label:"熱情度", desc:"老師單方面的表現/聲音感染力", color:"#ef476f"},
+  {key:"PRO", label:"專業度", desc:"教學正確性、系統操作熟練度、糾錯能力", color:"#4cc9f0"},
+  {key:"PAC", label:"時間掌控", desc:"教學流程流暢度、時間管理", color:"#ffd166"},
+  {key:"INT", label:"互動參與", desc:"丟球能力、引導學員開口、應變", color:"#06d6a0"},
+  {key:"RAP", label:"親和力", desc:"對學員的同理心、建立連結", color:"#b388eb"},
+];
+
+let STATE = {
+  rows: [], teachers: [], teamDimAvg: {}, teamDimStd: {},
+  selected: "__ALL__", sort: "count", charts: [],
+};
+
+async function fetchData(){
+  document.getElementById("dataStatus").innerHTML = "載入中…";
+  document.getElementById("reloadBtn").disabled = true;
+  document.getElementById("errorBox").innerHTML = "";
+  try{
+    const resp = await fetch(GVIZ_URL + "&_=" + Date.now(), {cache:"no-store"});
+    if(!resp.ok) throw new Error("HTTP " + resp.status + " — 表單可能非公開狀態");
+    const text = await resp.text();
+    // gviz 回傳格式：google.visualization.Query.setResponse({...});
+    // 或 /*O_o*/\ngoogle.visualization.Query.setResponse({...});
+    const jsonMatch = text.match(/setResponse\((.*)\)/s);
+    if(!jsonMatch) throw new Error("無法解析 gviz 回傳格式");
+    const json = JSON.parse(jsonMatch[1]);
+    if(json.status === "error"){
+      const r = json.errors && json.errors[0] ? json.errors[0].detailed_message : "未知錯誤";
+      throw new Error("Google 回傳錯誤：" + r);
+    }
+    processGvizTable(json.table);
+    document.getElementById("dataStatus").innerHTML = `共 <b>${STATE.rows.length}</b> 筆 / <b>${STATE.teachers.length}</b> 位老師 / 最後同步 ${new Date().toLocaleTimeString("zh-TW")}`;
+    render();
+  }catch(e){
+    document.getElementById("errorBox").innerHTML = `<div class="error"><b>無法載入資料：</b> ${e.message}<br>
+      請確認 Google 表單「共用設定」為「知道連結的任何人」皆可檢視。<br>
+      若你是以 <code>file://</code> 本機檔案開啟，仍遇到 CORS 錯誤，請改用：
+      <ul style="margin:6px 0 0 16px">
+        <li>方法一：<b>將此 HTML 部署到 GitHub Pages</b>（最推薦）</li>
+        <li>方法二：用 <code>python -m http.server</code> 起本機伺服器後訪問 <code>http://localhost:8000</code></li>
+      </ul></div>`;
+    document.getElementById("dataStatus").innerHTML = "載入失敗";
+  }finally{
+    document.getElementById("reloadBtn").disabled = false;
+  }
+}
+
+// 將 gviz table 轉換為與原 processRows 相容的資料結構
+function processGvizTable(table){
+  // table.cols = [{label, type, ...}, ...]
+  // table.rows = [{c: [{v, f}, ...]}, ...]
+  if(!table || !table.rows) throw new Error("表單無資料");
+
+  // 把 gviz rows 轉成 2D array (每個 cell 取 v，string 類取 v 或 f)
+  const data = [];
+  // cols 的 label 有可能是 header（第一列），但前幾列是說明文字，我們仍需遍歷全部 rows 找「DEMO日期」
+  // gviz 預設會把第一列當 header，但因為此表前 5 列是說明，gviz 的 header 會是一團亂，我們手動找
+  // 先把 cols 也塞進 data[0]
+  if(table.cols && table.cols.length){
+    data.push(table.cols.map(c => c.label || ""));
+  }
+  table.rows.forEach(r=>{
+    const row = r.c.map(cell=>{
+      if(cell == null) return "";
+      if(cell.f != null) return cell.f;  // 格式化字串（日期會是 "2026/2/25" 這種）
+      if(cell.v == null) return "";
+      return String(cell.v);
+    });
+    data.push(row);
+  });
+
+  processRows(data);
+}
+
+function processRows(data){
+  let headerIdx = -1;
+  for(let i=0;i<data.length;i++){
+    if(data[i][0] && String(data[i][0]).trim() === "DEMO日期"){ headerIdx = i; break; }
+  }
+  if(headerIdx === -1) throw new Error("找不到標題列 (DEMO日期)");
+
+  const rows = [];
+  for(let i=headerIdx+1;i<data.length;i++){
+    const r = data[i];
+    if(!r[0] || !r[1]) continue;
+    const date = String(r[0]).trim();
+    const teacher = String(r[1]).trim();
+    if(!date || !teacher) continue;
+    if(teacher === "老師名稱") continue;
+    const parseNum = v => { const n = parseFloat(String(v).replace(/[^0-9.]/g,"")); return isNaN(n)?null:n; };
+    const row = {
+      date, teacher,
+      student: String(r[2]||"").trim(),
+      consultant: String(r[3]||"").trim(),
+      ENG: parseNum(r[4]), PRO: parseNum(r[5]), PAC: parseNum(r[6]),
+      INT: parseNum(r[7]), RAP: parseNum(r[8]),
+      avg: parseNum(r[9]),
+      room: String(r[10]||"").trim(),
+      consultantNote: String(r[11]||"").trim(),
+      adminNote: String(r[12]||"").trim(),
+    };
+    if([row.ENG,row.PRO,row.PAC,row.INT,row.RAP].every(x=>x===null)) continue;
+    if(/^TEST\./i.test(row.teacher)) continue;
+    rows.push(row);
+  }
+
+  const teamDimAvg = {}, teamDimStd = {};
+  DIMS.forEach(d=>{
+    const arr = rows.map(r=>r[d.key]).filter(x=>x!=null);
+    teamDimAvg[d.key] = arr.length? mean(arr):0;
+    teamDimStd[d.key] = arr.length? std(arr):0;
+  });
+
+  const map = {};
+  rows.forEach(r=>{
+    if(!map[r.teacher]) map[r.teacher] = {name:r.teacher, rows:[], dims:{ENG:[],PRO:[],PAC:[],INT:[],RAP:[]}};
+    map[r.teacher].rows.push(r);
+    DIMS.forEach(d=>{ if(r[d.key]!=null) map[r.teacher].dims[d.key].push(r[d.key]); });
+  });
+  const teachers = Object.values(map).map(t=>{
+    const dimAvg = {}, dimStd = {};
+    DIMS.forEach(d=>{
+      dimAvg[d.key] = t.dims[d.key].length? mean(t.dims[d.key]) : null;
+      dimStd[d.key] = t.dims[d.key].length>1? std(t.dims[d.key]) : 0;
+    });
+    const allAvgs = t.rows.map(r=>r.avg).filter(x=>x!=null);
+    return {...t, dimAvg, dimStd, avg: allAvgs.length? mean(allAvgs): null, count: t.rows.length};
+  });
+
+  STATE.rows = rows;
+  STATE.teachers = teachers;
+  STATE.teamDimAvg = teamDimAvg;
+  STATE.teamDimStd = teamDimStd;
+}
+
+function mean(arr){ return arr.reduce((a,b)=>a+b,0)/arr.length; }
+function std(arr){ const m = mean(arr); return Math.sqrt(mean(arr.map(x=>(x-m)*(x-m)))); }
+function slope(ys){
+  const n = ys.length;
+  if(n<2) return 0;
+  const xs = ys.map((_,i)=>i);
+  const mx = mean(xs), my = mean(ys);
+  let num=0, den=0;
+  for(let i=0;i<n;i++){ num += (xs[i]-mx)*(ys[i]-my); den += (xs[i]-mx)*(xs[i]-mx); }
+  return den===0? 0 : num/den;
+}
+
+function destroyCharts(){ STATE.charts.forEach(c=>{try{c.destroy()}catch(e){}}); STATE.charts=[]; }
+
+function render(){
+  destroyCharts();
+  renderKPI();
+  renderTeacherList();
+  renderMain();
+}
+
+function renderKPI(){
+  const total = STATE.rows.length;
+  const tcount = STATE.teachers.length;
+  const overallAvg = mean(STATE.rows.map(r=>r.avg).filter(x=>x!=null));
+  let best=["",-1], worst=["",99];
+  DIMS.forEach(d=>{
+    const v = STATE.teamDimAvg[d.key];
+    if(v > best[1]) best=[d.label, v];
+    if(v < worst[1]) worst=[d.label, v];
+  });
+  const highRate = (STATE.rows.filter(r=>r.avg!=null && r.avg>=4).length / total * 100);
+  const lowRate = (STATE.rows.filter(r=>r.avg!=null && r.avg<3.5).length / total * 100);
+  document.getElementById("kpi").innerHTML = `
+    <div class="cell"><div class="k">總反饋筆數</div><div class="v">${total}</div></div>
+    <div class="cell"><div class="k">老師人數</div><div class="v">${tcount}</div></div>
+    <div class="cell"><div class="k">整體平均</div><div class="v">${overallAvg.toFixed(2)}<small>/ 5.0</small></div></div>
+    <div class="cell"><div class="k">高分率 (≥4)</div><div class="v" style="color:var(--good)">${highRate.toFixed(0)}<small>%</small></div></div>
+    <div class="cell"><div class="k">低分率 (<3.5)</div><div class="v" style="color:var(--bad)">${lowRate.toFixed(0)}<small>%</small></div></div>
+    <div class="cell"><div class="k">團隊最弱項</div><div class="v" style="color:var(--bad);font-size:19px">${worst[0]}<small>${worst[1].toFixed(2)}</small></div></div>
+  `;
+}
+
+function renderTeacherList(){
+  const el = document.getElementById("tlist");
+  let sorted = [...STATE.teachers];
+  if(STATE.sort === "count") sorted.sort((a,b)=>b.count-a.count);
+  else if(STATE.sort === "avg") sorted.sort((a,b)=>(b.avg||0)-(a.avg||0));
+  else sorted.sort((a,b)=>a.name.localeCompare(b.name));
+  const maxCount = Math.max(...sorted.map(t=>t.count));
+  el.innerHTML = `
+    <h2>老師清單 · ${STATE.teachers.length} 位</h2>
+    <div class="sort-btns">
+      <button data-s="count" class="${STATE.sort==='count'?'active':''}">筆數</button>
+      <button data-s="avg" class="${STATE.sort==='avg'?'active':''}">分數</button>
+      <button data-s="name" class="${STATE.sort==='name'?'active':''}">名稱</button>
+    </div>
+    <ul>
+      <li class="all ${STATE.selected==='__ALL__'?'active':''}"><button data-t="__ALL__">
+        <span class="tname">★ 全部老師（團隊總覽）</span>
+        <span class="tscore">${STATE.rows.length}</span>
+      </button></li>
+      ${sorted.map(t=>`
+        <li class="${STATE.selected===t.name?'active':''}"><button data-t="${escapeAttr(t.name)}">
+          <span style="flex:1;min-width:0">
+            <span class="tname">${escapeHtml(t.name)}</span>
+            <span class="tmeta">${t.count} 筆 · avg ${t.avg?t.avg.toFixed(2):'—'}</span>
+            <span class="tbar" style="--p:${(t.count/maxCount*100)}%"></span>
+          </span>
+          <span class="tscore" style="color:${scoreColor(t.avg)}">${t.avg?t.avg.toFixed(1):'—'}</span>
+        </button></li>
+      `).join("")}
+    </ul>
+  `;
+  el.querySelectorAll("[data-t]").forEach(b=>b.addEventListener("click",()=>{ STATE.selected = b.dataset.t; render(); }));
+  el.querySelectorAll("[data-s]").forEach(b=>b.addEventListener("click",()=>{ STATE.sort = b.dataset.s; renderTeacherList(); }));
+}
+
+function scoreColor(v){ if(v==null) return "var(--text-faint)"; if(v>=4.3) return "var(--good)"; if(v>=3.5) return "var(--accent)"; if(v>=3.0) return "var(--warn)"; return "var(--bad)"; }
+
+function renderMain(){
+  if(STATE.selected === "__ALL__") return renderTeamOverview();
+  const t = STATE.teachers.find(x=>x.name===STATE.selected);
+  if(!t){ document.getElementById("main").innerHTML="<div class='card'>找不到此老師</div>"; return; }
+  renderTeacherDetail(t);
+}
+
+function renderTeamOverview(){
+  const main = document.getElementById("main");
+  const sorted = [...STATE.teachers].sort((a,b)=>(b.avg||0)-(a.avg||0));
+
+  main.innerHTML = `
+    <div class="detail-head">
+      <div class="crumb">TEAM OVERVIEW · 全部老師</div>
+      <h2>團隊總覽</h2>
+      <div class="sub">
+        <span><b>${STATE.teachers.length}</b> 位老師</span>
+        <span><b>${STATE.rows.length}</b> 筆 Demo 反饋</span>
+        <span>資料期間 <b>${dateRange()}</b></span>
+      </div>
+    </div>
+
+    <div class="grid g2">
+      <div class="card">
+        <h3>老師平均分數排名<span class="sub">筆數 ≥ 2</span></h3>
+        <div class="chart-box tall"><canvas id="rankChart"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>團隊五項指標雷達圖</h3>
+        <div class="chart-box tall"><canvas id="teamRadar"></canvas></div>
+      </div>
+    </div>
+
+    <div class="grid" style="margin-top:20px">
+      <div class="card">
+        <h3>每日整體平均分數走勢</h3>
+        <div class="chart-box"><canvas id="dailyTrend"></canvas></div>
+      </div>
+    </div>
+
+    <div class="grid g2" style="margin-top:20px">
+      <div class="card good">
+        <h3>Top 5 老師（依平均分數，筆數 ≥ 2）</h3>
+        <div class="dim-grid">
+          ${sorted.filter(t=>t.avg!=null && t.count>=2).slice(0,5).map(renderRankRow).join("")}
+        </div>
+      </div>
+      <div class="card bad">
+        <h3>Bottom 5 老師（需關注，筆數 ≥ 2）</h3>
+        <div class="dim-grid">
+          ${sorted.filter(t=>t.avg!=null && t.count>=2).slice(-5).reverse().map(renderRankRow).join("")}
+        </div>
+      </div>
+    </div>
+  `;
+
+  drawRankChart(sorted.filter(t=>t.avg!=null && t.count>=2));
+  drawTeamRadar();
+  drawDailyTrend();
+}
+
+function renderRankRow(t){
+  const pct = (t.avg/5*100).toFixed(0);
+  const cls = t.avg>=4?'high':t.avg>=3.3?'mid':'low';
+  return `<div class="dim-row" style="grid-template-columns:140px 1fr 60px 42px">
+    <div class="dname" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(t.name)}</div>
+    <div class="dbar" style="--p:${pct}%"></div>
+    <div class="dval ${cls}">${t.avg.toFixed(2)}</div>
+    <div class="dname" style="text-align:right">${t.count}筆</div>
+  </div>`;
+}
+
+function drawRankChart(teachers){
+  const ctx = document.getElementById("rankChart");
+  const c = new Chart(ctx, {
+    type:"bar",
+    data:{
+      labels: teachers.map(t=>t.name.length>14?t.name.slice(0,13)+"…":t.name),
+      datasets:[{
+        label:"平均分數",
+        data:teachers.map(t=>t.avg),
+        backgroundColor: teachers.map(t=>t.avg>=4.3?'#06d6a0':t.avg>=3.5?'#ffd166':t.avg>=3.0?'#ffb545':'#ef476f'),
+        borderWidth:0
+      }]
+    },
+    options:{
+      indexAxis:"y", responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{afterLabel:(c)=>`${teachers[c.dataIndex].count} 筆 Demo`}}},
+      scales:{x:{min:0,max:5,grid:{color:"#262d36"},ticks:{color:"#9aa4b2"}},y:{grid:{display:false},ticks:{color:"#e8ecf1",font:{size:11}}}}
+    }
+  });
+  STATE.charts.push(c);
+}
+
+function drawTeamRadar(){
+  const data = DIMS.map(d=>STATE.teamDimAvg[d.key]);
+  const c = new Chart(document.getElementById("teamRadar"),{
+    type:"radar",
+    data:{
+      labels: DIMS.map(d=>`${d.label} (${d.key})`),
+      datasets:[{label:"團隊平均", data, backgroundColor:"rgba(255,209,102,.15)", borderColor:"#ffd166", pointBackgroundColor:"#ffd166", pointRadius:4, borderWidth:2}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:"#e8ecf1"}}},
+      scales:{r:{min:0,max:5,ticks:{color:"#5b6472",backdropColor:"transparent",stepSize:1},grid:{color:"#323b47"},angleLines:{color:"#323b47"},pointLabels:{color:"#e8ecf1",font:{size:12}}}}
+    }
+  });
+  STATE.charts.push(c);
+}
+
+function drawDailyTrend(){
+  const byDate = {};
+  STATE.rows.forEach(r=>{
+    if(r.avg==null) return;
+    if(!byDate[r.date]) byDate[r.date]=[];
+    byDate[r.date].push(r.avg);
+  });
+  const dates = Object.keys(byDate).sort((a,b)=>new Date(a.replace(/\//g,"-")) - new Date(b.replace(/\//g,"-")));
+  const avgs = dates.map(d=>mean(byDate[d]));
+  const counts = dates.map(d=>byDate[d].length);
+  const c = new Chart(document.getElementById("dailyTrend"),{
+    type:"line",
+    data:{labels:dates,datasets:[
+      {label:"當日平均",data:avgs,borderColor:"#ffd166",backgroundColor:"rgba(255,209,102,.15)",tension:.3,fill:true,borderWidth:2,pointRadius:3,yAxisID:"y"},
+      {label:"當日筆數",data:counts,borderColor:"#4cc9f0",backgroundColor:"transparent",borderDash:[4,4],tension:.3,borderWidth:1.5,pointRadius:2,yAxisID:"y1"}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:"#e8ecf1"}}},
+      scales:{
+        x:{grid:{color:"#262d36"},ticks:{color:"#9aa4b2",maxRotation:45,minRotation:45,font:{size:10}}},
+        y:{position:"left",min:2,max:5,grid:{color:"#262d36"},ticks:{color:"#ffd166"},title:{display:true,text:"平均分數",color:"#ffd166"}},
+        y1:{position:"right",min:0,grid:{display:false},ticks:{color:"#4cc9f0"},title:{display:true,text:"筆數",color:"#4cc9f0"}}
+      }}
+  });
+  STATE.charts.push(c);
+}
+
+function dateRange(){
+  const dates = STATE.rows.map(r=>r.date).filter(Boolean).sort((a,b)=>new Date(a.replace(/\//g,"-"))-new Date(b.replace(/\//g,"-")));
+  return dates.length? `${dates[0]} ~ ${dates[dates.length-1]}`:"—";
+}
+
+// ---------- TEACHER ANALYSIS (pure math) ----------
+function analyzeTeacher(t){
+  const dimDelta = {};
+  DIMS.forEach(d=>{
+    const v = t.dimAvg[d.key];
+    dimDelta[d.key] = v==null? null : v - STATE.teamDimAvg[d.key];
+  });
+  const validDimAvgs = DIMS.map(d=>t.dimAvg[d.key]).filter(x=>x!=null);
+  const ownDimAvg = validDimAvgs.length? mean(validDimAvgs): 0;
+  const dimOwnDelta = {};
+  DIMS.forEach(d=>{
+    const v = t.dimAvg[d.key];
+    dimOwnDelta[d.key] = v==null? null : v - ownDimAvg;
+  });
+  const dimRates = {};
+  DIMS.forEach(d=>{
+    const arr = t.dims[d.key];
+    dimRates[d.key] = {
+      high: arr.length? (arr.filter(x=>x>=4).length / arr.length) : 0,
+      low: arr.length? (arr.filter(x=>x<=2).length / arr.length) : 0,
+      count: arr.length
+    };
+  });
+
+  const strengths = DIMS.map(d=>({d, own:dimOwnDelta[d.key], team:dimDelta[d.key], rate:dimRates[d.key].high, val:t.dimAvg[d.key]}))
+    .filter(x=>x.val!=null).sort((a,b)=>b.own-a.own);
+  const weaknesses = [...strengths].reverse();
+
+  const teamDelta = DIMS.map(d=>({d, delta:dimDelta[d.key], val:t.dimAvg[d.key], std:t.dimStd[d.key]})).filter(x=>x.val!=null);
+  const mostAbove = teamDelta.length? [...teamDelta].sort((a,b)=>b.delta-a.delta)[0] : null;
+  const mostBelow = teamDelta.length? [...teamDelta].sort((a,b)=>a.delta-b.delta)[0] : null;
+  const totalStd = DIMS.map(d=>t.dimStd[d.key]).length? mean(DIMS.map(d=>t.dimStd[d.key])) : 0;
+
+  const sorted = [...t.rows].sort((a,b)=>new Date(a.date.replace(/\//g,"-"))-new Date(b.date.replace(/\//g,"-")));
+  const avgSeries = sorted.map(r=>r.avg).filter(x=>x!=null);
+  const trendSlope = slope(avgSeries);
+  const dimSlopes = {};
+  DIMS.forEach(d=>{
+    const s = sorted.map(r=>r[d.key]).filter(x=>x!=null);
+    dimSlopes[d.key] = s.length>=2? slope(s) : 0;
+  });
+
+  const dimDist = {};
+  DIMS.forEach(d=>{
+    const counts = [0,0,0,0,0];
+    t.dims[d.key].forEach(v=>{ if(v>=1 && v<=5) counts[Math.round(v)-1]++; });
+    dimDist[d.key] = counts;
+  });
+
+  return { dimDelta, dimOwnDelta, dimRates, dimSlopes, dimDist,
+    strengths, weaknesses, teamDelta, mostAbove, mostBelow, totalStd,
+    trendSlope, avgSeries, sorted, ownDimAvg };
+}
+
+function renderTeacherDetail(t){
+  const main = document.getElementById("main");
+  const A = analyzeTeacher(t);
+  const consultants = [...new Set(t.rows.map(r=>r.consultant).filter(Boolean))];
+  const notesPos = t.rows.filter(r=>r.consultantNote && (r.avg||0)>=4);
+  const notesNeg = t.rows.filter(r=>r.consultantNote && (r.avg||0)<3.5);
+
+  main.innerHTML = `
+    <div class="detail-head">
+      <div class="crumb">TEACHER DETAIL</div>
+      <h2>${escapeHtml(t.name)}</h2>
+      <div class="sub">
+        <span>Demo 次數 <b>${t.count}</b></span>
+        <span>平均分數 <b style="color:${scoreColor(t.avg)}">${t.avg?t.avg.toFixed(2):'—'}</b></span>
+        <span>團隊排名 <b>${teamRank(t)}</b></span>
+        <span>合作顧問 <b>${consultants.slice(0,6).join(", ")}${consultants.length>6?' 等':''}</b></span>
+      </div>
+    </div>
+
+    <div class="grid g2">
+      <div class="card">
+        <h3>五項指標雷達圖 · 對比團隊平均</h3>
+        <div class="chart-box"><canvas id="radarT"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>各項指標 vs 團隊</h3>
+        <div class="dim-grid" style="margin-top:16px">
+          ${DIMS.map(d=>{
+            const v = t.dimAvg[d.key];
+            const pct = v? (v/5*100).toFixed(0): 0;
+            const tpct = (STATE.teamDimAvg[d.key]/5*100).toFixed(0);
+            const cls = !v?'':v>=4?'high':v>=3.3?'mid':'low';
+            const delta = A.dimDelta[d.key];
+            const deltaStr = delta==null? '' : (delta>=0?'+':'') + delta.toFixed(2);
+            const deltaColor = delta==null?'':delta>=0.15?'var(--good)':delta<=-0.15?'var(--bad)':'var(--text-dim)';
+            return `<div class="dim-row" title="${d.desc}">
+              <div class="dname">${d.label}<br><span style="color:var(--text-faint)">${d.key}</span></div>
+              <div class="dbar" style="--p:${pct}%"><span class="team-mark" style="--tp:${tpct}%"></span></div>
+              <div class="dval ${cls}">${v?v.toFixed(2):'—'}<br><span style="font-size:10px;color:${deltaColor}">${deltaStr}</span></div>
+            </div>`;
+          }).join("")}
+        </div>
+        <div class="legend-mini">
+          <span><i></i>團隊平均位置</span>
+          <span>右側數字＝與團隊差距</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid g3" style="margin-top:20px">
+      <div class="card good">
+        <h3>共同優點 <span class="sub">依維度 · 相對強項</span></h3>
+        ${renderStrengths(A, t)}
+      </div>
+      <div class="card bad">
+        <h3>共同缺點 <span class="sub">依維度 · 相對弱項</span></h3>
+        ${renderWeaknesses(A, t)}
+      </div>
+      <div class="card purple">
+        <h3>老師特色 <span class="sub">與團隊的區別</span></h3>
+        ${renderFeatures(A, t)}
+      </div>
+    </div>
+
+    <div class="grid" style="margin-top:20px">
+      <div class="card info">
+        <h3>個人評分走向 <span class="sub">按 Demo 先後排序</span></h3>
+        <div class="chart-box"><canvas id="trendT"></canvas></div>
+        <div class="insight-box" style="margin-top:16px">${renderTrendInsight(A)}</div>
+      </div>
+    </div>
+
+    <div class="grid g2" style="margin-top:20px">
+      <div class="card">
+        <h3>各維度分數分佈</h3>
+        ${renderDimDistribution(A)}
+      </div>
+      <div class="card">
+        <h3>各維度進步/退步斜率 <span class="sub">線性回歸</span></h3>
+        ${renderSlopes(A)}
+      </div>
+    </div>
+
+    <div class="grid g2" style="margin-top:20px">
+      <div class="card bad">
+        <h3>負評原文（平均 < 3.5）· ${notesNeg.length} 筆</h3>
+        <div class="fb-list">${notesNeg.length? notesNeg.map(r=>fbHtml(r,"neg")).join(""):"<div class='empty'>無</div>"}</div>
+      </div>
+      <div class="card good">
+        <h3>正評原文（平均 ≥ 4）· ${notesPos.length} 筆</h3>
+        <div class="fb-list">${notesPos.length? notesPos.map(r=>fbHtml(r,"pos")).join(""):"<div class='empty'>無</div>"}</div>
+      </div>
+    </div>
+
+    <div class="grid" style="margin-top:20px">
+      <div class="card">
+        <h3>完整 Demo 紀錄（${t.rows.length} 筆）</h3>
+        <div class="fb-list" style="max-height:360px">
+          ${[...t.rows].sort((a,b)=>(new Date(b.date.replace(/\//g,"-"))-new Date(a.date.replace(/\//g,"-")))).map(r=>rowHtml(r)).join("")}
+        </div>
+      </div>
+    </div>
+  `;
+
+  drawTeacherRadar(t);
+  drawTeacherTrend(t, A);
+}
+
+function teamRank(t){
+  const valid = STATE.teachers.filter(x=>x.avg!=null && x.count>=2).sort((a,b)=>b.avg-a.avg);
+  const idx = valid.findIndex(x=>x.name===t.name);
+  if(idx<0) return `— / ${valid.length}（筆數不足）`;
+  return `#${idx+1} / ${valid.length}`;
+}
+
+function renderStrengths(A, t){
+  if(t.count < 2) return `<div class="empty">此老師僅 ${t.count} 筆 Demo，樣本不足以歸納共同優點。</div>`;
+  const candidates = A.strengths.filter(x=>x.own>=0.1 || x.rate>=0.7).slice(0,3);
+  if(!candidates.length) return `<div class="empty">此老師各維度表現平均，無明顯突出強項。</div>`;
+  return candidates.map(x=>{
+    const relMsg = x.own>=0.3 ? "明顯高於自身平均" : x.own>=0.1 ? "略高於自身平均" : "相對穩定";
+    const teamMsg = x.team>=0.2 ? `，且比團隊平均高 ${x.team.toFixed(2)} 分` : x.team>=0 ? "，與團隊水準相當" : `，惟仍低於團隊 ${Math.abs(x.team).toFixed(2)} 分`;
+    const rateStr = (x.rate*100).toFixed(0);
+    return `<div class="stat-item pos">
+      <div class="label">
+        <span class="dim-tag">${x.d.key}</span>
+        <span class="dim-name">${x.d.label}</span>
+        <span class="metric">均分 <b>${x.val.toFixed(2)}</b> · 高分率 <b>${rateStr}%</b></span>
+      </div>
+      <div class="desc">${relMsg}${teamMsg}。${A.dimRates[x.d.key].count} 筆中 <b>${Math.round(x.rate*A.dimRates[x.d.key].count)}</b> 筆得 4 分以上。</div>
+    </div>`;
+  }).join("");
+}
+
+function renderWeaknesses(A, t){
+  if(t.count < 2) return `<div class="empty">此老師僅 ${t.count} 筆 Demo，樣本不足以歸納共同缺點。</div>`;
+  const candidates = A.weaknesses.filter(x=>x.own<=-0.1 || A.dimRates[x.d.key].low>=0.2).slice(0,3);
+  if(!candidates.length) return `<div class="empty">此老師各維度表現均衡，無明顯共同缺點。</div>`;
+  return candidates.map(x=>{
+    const relMsg = x.own<=-0.3 ? "明顯低於自身平均" : x.own<=-0.1 ? "略低於自身平均" : "相對持平";
+    const teamMsg = x.team<=-0.2 ? `，且比團隊平均低 ${Math.abs(x.team).toFixed(2)} 分` : x.team<=0 ? "，與團隊水準相當" : `，雖然仍高於團隊 ${x.team.toFixed(2)} 分`;
+    const lowRate = A.dimRates[x.d.key].low;
+    const lowMsg = lowRate>=0.2 ? ` · 有 <b>${(lowRate*100).toFixed(0)}%</b> 的 Demo 拿到 2 分以下` : "";
+    return `<div class="stat-item neg">
+      <div class="label">
+        <span class="dim-tag">${x.d.key}</span>
+        <span class="dim-name">${x.d.label}</span>
+        <span class="metric">均分 <b>${x.val.toFixed(2)}</b> · 高分率 <b>${(x.rate*100).toFixed(0)}%</b></span>
+      </div>
+      <div class="desc">${relMsg}${teamMsg}${lowMsg}。</div>
+    </div>`;
+  }).join("");
+}
+
+function renderFeatures(A, t){
+  if(t.count < 2) return `<div class="empty">此老師僅 ${t.count} 筆 Demo，樣本不足以歸納特色。</div>`;
+  const parts = [];
+
+  if(A.mostAbove && A.mostAbove.delta >= 0.2){
+    parts.push(`<div class="stat-item">
+      <div class="label"><span class="dim-tag" style="border-color:var(--good);color:var(--good)">標誌強項</span><span class="dim-name">${A.mostAbove.d.label}</span><span class="metric">+${A.mostAbove.delta.toFixed(2)} vs 團隊</span></div>
+      <div class="desc">此老師最突出的維度，比團隊平均高 ${A.mostAbove.delta.toFixed(2)} 分</div>
+    </div>`);
+  }
+  if(A.mostBelow && A.mostBelow.delta <= -0.2){
+    parts.push(`<div class="stat-item">
+      <div class="label"><span class="dim-tag" style="border-color:var(--bad);color:var(--bad)">明顯短板</span><span class="dim-name">${A.mostBelow.d.label}</span><span class="metric">${A.mostBelow.delta.toFixed(2)} vs 團隊</span></div>
+      <div class="desc">此老師最明顯的短板，比團隊平均低 ${Math.abs(A.mostBelow.delta).toFixed(2)} 分</div>
+    </div>`);
+  }
+  const stdLabel = A.totalStd < 0.4 ? "極穩定" : A.totalStd < 0.7 ? "穩定" : A.totalStd < 1.0 ? "中等波動" : "高度波動";
+  const stdColor = A.totalStd < 0.4 ? "var(--good)" : A.totalStd < 0.7 ? "var(--accent)" : "var(--bad)";
+  parts.push(`<div class="stat-item">
+    <div class="label"><span class="dim-tag" style="border-color:${stdColor};color:${stdColor}">表現穩定度</span><span class="dim-name">${stdLabel}</span><span class="metric">平均 σ = <b>${A.totalStd.toFixed(2)}</b></span></div>
+    <div class="desc">${A.totalStd < 0.4 ? "每次 Demo 表現一致，品質可預期" : A.totalStd < 0.7 ? "表現大致一致，偶有起伏" : A.totalStd < 1.0 ? "表現起伏明顯，需留意學員匹配" : "表現極不穩定，不同場合落差大"}</div>
+  </div>`);
+
+  if(A.mostAbove && A.mostBelow){
+    const gap = A.mostAbove.val - A.mostBelow.val;
+    if(gap >= 1.5){
+      parts.push(`<div class="stat-item">
+        <div class="label"><span class="dim-tag" style="border-color:var(--purple);color:var(--purple)">偏科型</span><span class="dim-name">${A.mostAbove.d.label} ↔ ${A.mostBelow.d.label}</span><span class="metric">落差 ${gap.toFixed(2)}</span></div>
+        <div class="desc">強弱項差距大，在${A.mostAbove.d.label}突出但${A.mostBelow.d.label}需加強</div>
+      </div>`);
+    } else if(gap < 0.5){
+      parts.push(`<div class="stat-item">
+        <div class="label"><span class="dim-tag" style="border-color:var(--info);color:var(--info)">全面均衡</span><span class="dim-name">五維度差距小</span><span class="metric">落差 ${gap.toFixed(2)}</span></div>
+        <div class="desc">五個維度表現平均，無明顯偏科</div>
+      </div>`);
+    }
+  }
+  return parts.length? parts.join("") : `<div class="empty">此老師表現與團隊接近，無突出特色。</div>`;
+}
+
+function renderTrendInsight(A){
+  if(A.avgSeries.length < 3) return `<b>樣本數不足：</b>僅 ${A.avgSeries.length} 筆 Demo，無法判斷趨勢。`;
+  const s = A.trendSlope;
+  const firstHalf = A.avgSeries.slice(0, Math.floor(A.avgSeries.length/2));
+  const secondHalf = A.avgSeries.slice(Math.ceil(A.avgSeries.length/2));
+  const delta = mean(secondHalf) - mean(firstHalf);
+  let trendLabel, trendClass;
+  if(s >= 0.05){ trendLabel="明顯進步"; trendClass="trend-up"; }
+  else if(s >= 0.01){ trendLabel="緩步進步"; trendClass="trend-up"; }
+  else if(s <= -0.05){ trendLabel="明顯退步"; trendClass="trend-down"; }
+  else if(s <= -0.01){ trendLabel="緩步退步"; trendClass="trend-down"; }
+  else { trendLabel="表現穩定"; trendClass="trend-flat"; }
+  const recent3 = A.avgSeries.slice(-3);
+  const recentAvg = mean(recent3);
+  const overallAvg = mean(A.avgSeries);
+  const recentDelta = recentAvg - overallAvg;
+  const dimSlopeEntries = DIMS.map(d=>({d, s:A.dimSlopes[d.key]})).sort((a,b)=>b.s-a.s);
+  const bestImprove = dimSlopeEntries[0];
+  const worstDecline = dimSlopeEntries[dimSlopeEntries.length-1];
+  let dimTrend = "";
+  if(bestImprove.s >= 0.05) dimTrend += `<br>📈 <b>${bestImprove.d.label}</b> 進步最明顯（斜率 +${bestImprove.s.toFixed(3)}）。`;
+  if(worstDecline.s <= -0.05) dimTrend += `<br>📉 <b>${worstDecline.d.label}</b> 退步最明顯（斜率 ${worstDecline.s.toFixed(3)}）。`;
+  return `
+    <b>整體趨勢：</b><span class="${trendClass}">${trendLabel}</span>（斜率 ${s>=0?'+':''}${s.toFixed(3)}，後半均分 ${delta>=0?'+':''}${delta.toFixed(2)} vs 前半）
+    <br><b>近 3 筆平均：</b>${recentAvg.toFixed(2)}（${recentDelta>=0?'+':''}${recentDelta.toFixed(2)} vs 整體平均 ${overallAvg.toFixed(2)}）
+    ${dimTrend}
+  `;
+}
+
+function renderDimDistribution(A){
+  return DIMS.map(d=>{
+    const dist = A.dimDist[d.key];
+    const total = dist.reduce((a,b)=>a+b,0);
+    if(!total) return `<div class="empty" style="margin-bottom:12px">${d.label}：無資料</div>`;
+    return `<div style="margin-bottom:14px">
+      <div style="font-size:12px;color:var(--text-dim);margin-bottom:4px;font-family:'JetBrains Mono',monospace;letter-spacing:.5px">${d.label} (${d.key}) · n=${total}</div>
+      <div class="dist-wrap">
+        ${[5,4,3,2,1].map(sc=>{
+          const n = dist[sc-1];
+          const pct = total? (n/total*100):0;
+          return `<div class="dist-row s${sc}">
+            <div class="dist-label">${sc} 分</div>
+            <div class="dist-bar" style="--p:${pct}%"></div>
+            <div class="dist-val">${n} · ${pct.toFixed(0)}%</div>
+          </div>`;
+        }).join("")}
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function renderSlopes(A){
+  const entries = DIMS.map(d=>({d, s:A.dimSlopes[d.key]}));
+  const maxAbs = Math.max(...entries.map(x=>Math.abs(x.s)), 0.001);
+  return `<div class="dim-grid" style="margin-top:8px">
+    ${entries.map(x=>{
+      const absPct = (Math.abs(x.s)/maxAbs*50);
+      const isPos = x.s >= 0;
+      const color = x.s >= 0.05 ? "var(--good)" : x.s <= -0.05 ? "var(--bad)" : "var(--text-dim)";
+      const label = x.s >= 0.05 ? "進步" : x.s <= -0.05 ? "退步" : "持平";
+      return `<div class="dim-row" style="grid-template-columns:72px 1fr 90px">
+        <div class="dname">${x.d.label}<br><span style="color:var(--text-faint)">${x.d.key}</span></div>
+        <div style="position:relative;height:14px;background:var(--bg-2);border:1px solid var(--line)">
+          <div style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--line-2)"></div>
+          <div style="position:absolute;top:0;bottom:0;${isPos?`left:50%;width:${absPct}%`:`right:50%;width:${absPct}%`};background:${color}"></div>
+        </div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;text-align:right;color:${color}">
+          <b>${x.s>=0?'+':''}${x.s.toFixed(3)}</b><br><span style="color:var(--text-faint);font-size:10px">${label}</span>
+        </div>
+      </div>`;
+    }).join("")}
+  </div>
+  <div class="legend-mini">
+    <span>斜率 ＞ +0.05 視為進步 · ＜ -0.05 視為退步</span>
+  </div>`;
+}
+
+function fbHtml(r, cls){
+  return `<div class="fb-item ${cls}">
+    <div class="fb-meta"><b>${r.date}</b> · 學員 ${escapeHtml(r.student||"—")} · 顧問 ${escapeHtml(r.consultant||"—")} · 均分 ${r.avg?r.avg.toFixed(1):'—'}</div>
+    <div class="fb-text">${escapeHtml(r.consultantNote)}</div>
+    ${r.adminNote?`<div class="fb-text" style="color:var(--info);margin-top:4px;font-size:12px">教務：${escapeHtml(r.adminNote)}</div>`:""}
+  </div>`;
+}
+
+function rowHtml(r){
+  const scoreTxt = DIMS.map(d=>`${d.key}:${r[d.key]??"—"}`).join(" ");
+  return `<div class="fb-item ${r.avg&&r.avg<3.5?'neg':r.avg&&r.avg>=4?'pos':''}">
+    <div class="fb-meta"><b>${r.date}</b> · 學員 ${escapeHtml(r.student||"—")} · 顧問 ${escapeHtml(r.consultant||"—")} · 均分 <b style="color:${scoreColor(r.avg)}">${r.avg?r.avg.toFixed(1):'—'}</b></div>
+    <div class="fb-meta" style="font-family:'JetBrains Mono',monospace">${scoreTxt}</div>
+    ${r.consultantNote?`<div class="fb-text" style="margin-top:4px">${escapeHtml(r.consultantNote)}</div>`:""}
+    ${r.adminNote?`<div class="fb-text" style="color:var(--info);margin-top:4px;font-size:12px">教務：${escapeHtml(r.adminNote)}</div>`:""}
+  </div>`;
+}
+
+function drawTeacherRadar(t){
+  const c = new Chart(document.getElementById("radarT"),{
+    type:"radar",
+    data:{
+      labels: DIMS.map(d=>`${d.label} (${d.key})`),
+      datasets:[
+        {label:t.name, data:DIMS.map(d=>t.dimAvg[d.key]||0), backgroundColor:"rgba(255,209,102,.18)",borderColor:"#ffd166",pointBackgroundColor:"#ffd166",borderWidth:2,pointRadius:4},
+        {label:"團隊平均", data:DIMS.map(d=>STATE.teamDimAvg[d.key]), backgroundColor:"rgba(76,201,240,.08)",borderColor:"#4cc9f0",pointBackgroundColor:"#4cc9f0",borderWidth:1.5,pointRadius:3,borderDash:[4,4]}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:"#e8ecf1"}}},
+      scales:{r:{min:0,max:5,ticks:{color:"#5b6472",backdropColor:"transparent",stepSize:1},grid:{color:"#323b47"},angleLines:{color:"#323b47"},pointLabels:{color:"#e8ecf1",font:{size:11}}}}}
+  });
+  STATE.charts.push(c);
+}
+
+function drawTeacherTrend(t, A){
+  const sorted = A.sorted;
+  const labels = sorted.map(r=>`${r.date.slice(5)}·${(r.student||'').slice(0,6)}`);
+  const avgs = sorted.map(r=>r.avg);
+  const ma = avgs.map((_,i)=>{
+    const w = avgs.slice(Math.max(0,i-2),i+1).filter(x=>x!=null);
+    return w.length? mean(w): null;
+  });
+  const c = new Chart(document.getElementById("trendT"),{
+    type:"line",
+    data:{labels,datasets:[
+      ...DIMS.map(d=>({label:d.label,data:sorted.map(r=>r[d.key]),borderColor:d.color,backgroundColor:"transparent",borderWidth:1.2,pointRadius:2,tension:.25})),
+      {label:"均分",data:avgs,borderColor:"#e8ecf1",backgroundColor:"transparent",borderWidth:1.8,pointRadius:3,tension:.2},
+      {label:"均分·3點移動平均",data:ma,borderColor:"#ffd166",backgroundColor:"rgba(255,209,102,.08)",borderWidth:2.5,pointRadius:0,tension:.3,fill:true,borderDash:[6,3]}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:"#e8ecf1",font:{size:11},boxWidth:14}}},
+      scales:{
+        x:{grid:{color:"#262d36"},ticks:{color:"#9aa4b2",maxRotation:60,minRotation:45,font:{size:9}}},
+        y:{min:0,max:5,grid:{color:"#262d36"},ticks:{color:"#9aa4b2",stepSize:1}}
+      }}
+  });
+  STATE.charts.push(c);
+}
+
+function escapeHtml(s){return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function escapeAttr(s){return escapeHtml(s)}
+
+document.getElementById("reloadBtn").addEventListener("click",fetchData);
+fetchData();
+</script>
+</body>
+</html>
