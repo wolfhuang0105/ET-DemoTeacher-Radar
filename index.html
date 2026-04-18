@@ -35,9 +35,16 @@ h1 small{display:block;font-family:"JetBrains Mono",monospace;font-size:11px;col
 .kpi .k{font-family:"JetBrains Mono",monospace;font-size:10px;color:var(--text-faint);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px}
 .kpi .v{font-family:"Noto Serif TC",serif;font-weight:700;font-size:26px;line-height:1}
 .kpi .v small{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--text-dim);font-weight:400;margin-left:4px}
-.layout{display:grid;grid-template-columns:320px 1fr;gap:24px}
-@media(max-width:960px){.layout{grid-template-columns:1fr}}
-.tlist{background:var(--panel);border:1px solid var(--line);max-height:82vh;overflow-y:auto;position:sticky;top:20px}
+.layout{display:grid !important;grid-template-columns:300px 1fr;gap:20px}
+@media(max-width:768px){
+  .layout{grid-template-columns:1fr}
+  .tlist{position:static !important;max-height:none !important;margin-bottom:20px}
+  .tlist ul{max-height:300px;overflow-y:auto}
+  .tlist .view-tabs,.tlist h2,.tlist .sort-btns{position:static !important}
+}
+.role-view .layout{display:grid !important}  /* 確保在 role-view 內也套用 grid */
+.role-view:not(.active) .layout{display:none !important}
+.tlist{background:var(--panel);border:1px solid var(--line);max-height:82vh;overflow-y:auto;position:sticky;top:20px;width:100%;min-width:0}
 .tlist .view-tabs{display:flex;background:var(--bg-2);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:3}
 .tlist .view-tabs button{flex:1;appearance:none;background:none;border:none;border-right:1px solid var(--line);color:var(--text-faint);padding:10px 4px;font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:1px;cursor:pointer;text-transform:uppercase;transition:.1s}
 .tlist .view-tabs button:last-child{border-right:none}
@@ -61,7 +68,7 @@ h1 small{display:block;font-family:"JetBrains Mono",monospace;font-size:11px;col
 .tlist .all{background:var(--bg-2)}
 .tlist .all button{padding:14px 16px}
 .tlist .all.active button{box-shadow:inset 3px 0 0 var(--accent-2)}
-.main{min-width:0}
+.main{min-width:0;width:100%;overflow:hidden}
 .detail-head{margin-bottom:20px}
 .detail-head .crumb{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--text-faint);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px}
 .detail-head h2{font-family:"Noto Serif TC",serif;font-weight:900;font-size:32px;margin:0;line-height:1}
@@ -79,9 +86,10 @@ h1 small{display:block;font-family:"JetBrains Mono",monospace;font-size:11px;col
 .card.good h3::before{background:var(--good)}
 .card.info h3::before{background:var(--info)}
 .card.purple h3::before{background:var(--purple)}
+.card.warn-sec h3::before{background:var(--warn)}
 .card h3 .sub{margin-left:auto;font-size:9px;color:var(--text-faint);letter-spacing:.5px;text-transform:none;font-weight:400}
-.chart-box{position:relative;height:320px}
-.chart-box.tall{height:380px}
+.chart-box{position:relative;height:320px;width:100%}
+.chart-box.tall{height:380px;width:100%}
 .stat-item{padding:10px 0;border-bottom:1px dashed var(--line)}
 .stat-item:last-child{border-bottom:none}
 .stat-item .label{display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap}
@@ -214,6 +222,74 @@ h1 small{display:block;font-family:"JetBrains Mono",monospace;font-size:11px;col
 .rec-card .rec-reason{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);font-size:11px;color:var(--text-dim);line-height:1.55}
 .rec-card .rec-reason b{color:var(--accent);font-weight:500}
 .rec-empty{padding:30px;text-align:center;color:var(--text-faint);font-size:13px}
+
+/* Role switcher */
+.role-switcher{display:flex;gap:0;border:1px solid var(--line-2);background:var(--panel);margin-bottom:24px;overflow:hidden}
+.role-switcher button{flex:1;appearance:none;background:none;border:none;border-right:1px solid var(--line-2);color:var(--text-dim);padding:14px 20px;font-family:"Noto Sans TC",sans-serif;font-size:14px;cursor:pointer;letter-spacing:.5px;transition:.15s;display:flex;align-items:center;justify-content:center;gap:10px;font-weight:500}
+.role-switcher button:last-child{border-right:none}
+.role-switcher button:hover:not(.active){background:var(--panel-2);color:var(--text)}
+.role-switcher button.active{background:var(--accent);color:#000;font-weight:700}
+.role-switcher button .role-icon{font-size:18px}
+.role-switcher button .role-sub{font-size:10px;font-family:"JetBrains Mono",monospace;color:var(--text-faint);letter-spacing:1px;text-transform:uppercase;margin-left:4px}
+.role-switcher button.active .role-sub{color:rgba(0,0,0,.6)}
+
+/* Role section containers */
+.role-view{display:none}
+.role-view.active{display:block}
+
+/* Self-strictness widget (consultant) */
+.self-strictness{background:var(--panel);border:1px solid var(--line);padding:16px 20px;margin-bottom:20px;display:grid;grid-template-columns:auto 1fr auto;gap:20px;align-items:center}
+.self-strictness .ss-label{font-family:"JetBrains Mono",monospace;font-size:10px;color:var(--text-faint);letter-spacing:1.5px;text-transform:uppercase}
+.self-strictness .ss-name{font-family:"Noto Serif TC",serif;font-size:18px;font-weight:700;color:var(--accent)}
+.self-strictness .ss-gauge{position:relative;height:40px}
+.self-strictness .ss-gauge-bar{position:absolute;top:18px;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--bad),var(--accent),var(--good))}
+.self-strictness .ss-gauge-pos{position:absolute;top:14px;width:12px;height:12px;border-radius:50%;background:var(--text);border:2px solid var(--panel);box-shadow:0 0 0 1px var(--line-2);transform:translateX(-50%)}
+.self-strictness .ss-gauge-ticks{position:absolute;top:28px;left:0;right:0;display:flex;justify-content:space-between;font-family:"JetBrains Mono",monospace;font-size:9px;color:var(--text-faint)}
+.self-strictness .ss-result{font-family:"Noto Serif TC",serif;font-size:22px;font-weight:900;text-align:right}
+.self-strictness .ss-result .ss-delta{font-family:"JetBrains Mono",monospace;font-size:12px;display:block;font-weight:400}
+
+/* Consultant selector */
+.consultant-picker{background:var(--bg-2);border:1px solid var(--line);padding:10px 14px;margin-bottom:20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.consultant-picker label{font-family:"JetBrains Mono",monospace;font-size:10px;color:var(--text-faint);letter-spacing:1.5px;text-transform:uppercase}
+.consultant-picker select{appearance:none;background:var(--panel);border:1px solid var(--line-2);color:var(--text);padding:8px 14px;font-family:"Noto Sans TC",sans-serif;font-size:13px;cursor:pointer;min-width:140px}
+.consultant-picker select:focus{outline:none;border-color:var(--accent)}
+
+/* Age heatmap (weekday × age group) */
+.age-weekday-wrap{overflow-x:auto}
+.age-weekday{border-collapse:separate;border-spacing:0;font-family:"JetBrains Mono",monospace;font-size:11px;width:100%;min-width:600px}
+.age-weekday th{background:var(--panel);color:var(--accent);padding:10px 8px;text-align:center;font-weight:700;letter-spacing:.5px;border-right:1px solid var(--bg);border-bottom:1px solid var(--bg);font-size:11px}
+.age-weekday thead th.corner{text-align:left;padding:10px 14px}
+.age-weekday tbody th{text-align:left;padding:10px 14px;background:var(--panel);color:var(--text);white-space:nowrap;min-width:130px;font-weight:700}
+.age-weekday td{text-align:center;padding:0;border-right:1px solid var(--bg);border-bottom:1px solid var(--bg);cursor:pointer;transition:.1s;min-width:70px;height:50px;vertical-align:middle}
+.age-weekday td.empty{background:var(--bg);color:var(--text-faint);cursor:default}
+.age-weekday td.empty::after{content:"·";color:var(--line-2)}
+.age-weekday td:not(.empty):hover{outline:2px solid var(--accent);outline-offset:-2px;z-index:3;position:relative}
+.age-weekday td .awn{font-size:9px;color:rgba(0,0,0,.55);display:block;line-height:1}
+.age-weekday td .awv{font-size:14px;font-weight:700;color:#000;display:block}
+.age-weekday td.best-in-row{box-shadow:inset 0 0 0 2px #ffd166}
+.age-weekday td.best-in-row::before{content:"★";position:absolute;top:2px;right:4px;color:#000;font-size:10px}
+
+/* Alert cards (QA view) */
+.alert-grid{display:grid;gap:10px}
+.alert-card{display:grid;grid-template-columns:auto 1fr auto;gap:14px;padding:12px 14px;background:var(--bg-2);border-left:3px solid var(--bad);align-items:center;cursor:pointer;transition:.1s}
+.alert-card.warn{border-left-color:var(--warn)}
+.alert-card.info{border-left-color:var(--info)}
+.alert-card:hover{background:var(--panel-2);border-left-width:5px}
+.alert-card .alert-icon{font-size:20px}
+.alert-card .alert-body{min-width:0}
+.alert-card .alert-name{font-family:"Noto Serif TC",serif;font-size:15px;font-weight:700;color:var(--text);margin-bottom:3px}
+.alert-card .alert-reason{font-size:12px;color:var(--text-dim);line-height:1.5}
+.alert-card .alert-reason b{color:var(--bad);font-weight:500}
+.alert-card.warn .alert-reason b{color:var(--warn)}
+.alert-card .alert-stat{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--text-faint);text-align:right;min-width:80px}
+.alert-card .alert-stat b{display:block;font-size:16px;font-weight:700;color:var(--text)}
+
+/* Training recommendation (QA) */
+.training-card{background:var(--bg-2);border:1px solid var(--line);padding:14px 16px;margin-bottom:10px}
+.training-card .train-dim{font-family:"Noto Serif TC",serif;font-size:16px;font-weight:700;color:var(--warn);margin-bottom:4px}
+.training-card .train-stat{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--text-faint);margin-bottom:8px}
+.training-card .train-rec{font-size:12px;color:var(--text-dim);line-height:1.6}
+.training-card .train-rec b{color:var(--text)}
 .legend-mini{font-family:"JetBrains Mono",monospace;font-size:10px;color:var(--text-faint);margin-top:12px;display:flex;gap:16px;flex-wrap:wrap}
 .legend-mini span{display:flex;align-items:center;gap:5px}
 .legend-mini i{width:10px;height:2px;background:var(--info);display:inline-block}
@@ -300,9 +376,28 @@ footer b{color:var(--accent)}
 
 <div id="errorBox"></div>
 
-<div class="layout">
-  <aside class="tlist" id="tlist"></aside>
-  <main class="main" id="main"></main>
+<div class="role-switcher" id="roleSwitcher">
+  <button data-role="consultant" class="active"><span class="role-icon">🎯</span>顧問視角<span class="role-sub">Sales</span></button>
+  <button data-role="qa"><span class="role-icon">📚</span>教務視角<span class="role-sub">QA</span></button>
+  <button data-role="full"><span class="role-icon">🔬</span>全功能<span class="role-sub">Admin</span></button>
+</div>
+
+<!-- 顧問視角 -->
+<div class="role-view active" id="view-consultant">
+  <div id="consultantContent"></div>
+</div>
+
+<!-- 教務視角 -->
+<div class="role-view" id="view-qa">
+  <div id="qaContent"></div>
+</div>
+
+<!-- 全功能視角（原本的） -->
+<div class="role-view" id="view-full">
+  <div class="layout">
+    <aside class="tlist" id="tlist"></aside>
+    <main class="main" id="main"></main>
+  </div>
 </div>
 
 <footer>BUILT FOR WOLF / ETALKING TAIPEI / REAL-TIME GOOGLE SHEETS SYNC · PURE DATA ANALYSIS</footer>
@@ -334,6 +429,8 @@ let STATE = {
   sort: "count", charts: [],
   dataSource: "unknown",
   lastFetchRaw: null, lastFetchJson: null, lastArray: null, lastAnalysis: null,
+  currentRole: "consultant",  // "consultant" | "qa" | "full"
+  selfConsultant: null,  // 顧問視角中「我是誰」
 };
 
 // ---------- HARDCODED FALLBACK DATA (15 筆) ----------
@@ -586,9 +683,40 @@ function destroyCharts(){ STATE.charts.forEach(c=>{try{c.destroy()}catch(e){}});
 
 function render(){
   destroyCharts();
+
+  // 先清空所有 view 的內容，避免切換時殘留
+  const consultantEl = document.getElementById("consultantContent");
+  const qaEl = document.getElementById("qaContent");
+  const tlistEl = document.getElementById("tlist");
+  const mainEl = document.getElementById("main");
+  if(consultantEl) consultantEl.innerHTML = "";
+  if(qaEl) qaEl.innerHTML = "";
+  if(tlistEl) tlistEl.innerHTML = "";
+  if(mainEl) mainEl.innerHTML = "";
+
   renderKPI();
-  renderTeacherList();
-  renderMain();
+
+  // 切換視角顯示
+  document.querySelectorAll(".role-view").forEach(el=>el.classList.remove("active"));
+  document.querySelectorAll(".role-switcher button").forEach(b=>b.classList.toggle("active", b.dataset.role===STATE.currentRole));
+
+  if(STATE.currentRole === "consultant"){
+    document.getElementById("view-consultant").classList.add("active");
+    renderConsultantView();
+  } else if(STATE.currentRole === "qa"){
+    document.getElementById("view-qa").classList.add("active");
+    renderQAView();
+  } else {
+    document.getElementById("view-full").classList.add("active");
+    renderTeacherList();
+    renderMain();
+  }
+
+  // 切換視角後，因為原本的 display:none 容器寬度為 0，Chart.js 的初始尺寸可能不正確
+  // 在下一個 animation frame 強制 resize 所有 chart
+  requestAnimationFrame(()=>{
+    STATE.charts.forEach(c=>{ try{ c.resize(); }catch(e){} });
+  });
 }
 
 function renderKPI(){
@@ -1601,6 +1729,781 @@ function runRecommender(){
       window.scrollTo({top:0, behavior:"smooth"});
     });
   });
+}
+
+// ==========================================================================
+// 🎯 CONSULTANT VIEW (顧問視角)
+// ==========================================================================
+function renderConsultantView(){
+  const container = document.getElementById("consultantContent");
+  const consultants = aggregateByConsultant().sort((a,b)=>a.name.localeCompare(b.name));
+
+  // 如果還沒選顧問，預設選第一個（或 null）
+  if(STATE.selfConsultant === null && consultants.length){
+    STATE.selfConsultant = consultants[0].name;
+  }
+  const me = consultants.find(c=>c.name === STATE.selfConsultant);
+
+  container.innerHTML = `
+    <div class="consultant-picker">
+      <label>我是 · WHO AM I</label>
+      <select id="selfConsSelect">
+        ${consultants.map(c=>`<option value="${escapeAttr(c.name)}" ${c.name===STATE.selfConsultant?'selected':''}>${escapeHtml(c.name)} (${c.count} 筆)</option>`).join("")}
+      </select>
+      <span style="font-size:11px;color:var(--text-faint);font-family:'JetBrains Mono',monospace">選擇你的顧問名字，所有分析將以你為中心</span>
+    </div>
+
+    ${me? renderSelfStrictness(me):""}
+
+    <div class="grid" style="margin-top:20px">
+      <div class="recommender">
+        <h3>🎯 學員配對推薦器</h3>
+        <div class="rec-sub">輸入學員年齡 → 自動建議最佳安排日 + 該年齡×該星期表現最好的老師清單</div>
+        <div class="rec-form">
+          <div class="rec-field">
+            <label>學員年齡</label>
+            <select id="pickerAge">
+              <option value="">請選擇</option>
+              <option value="3">3 歲</option>
+              <option value="4">4 歲</option>
+              <option value="5">5 歲</option>
+              <option value="6">6 歲</option>
+              <option value="7">7 歲</option>
+              <option value="8">8 歲</option>
+              <option value="9">9 歲</option>
+              <option value="10">10 歲</option>
+              <option value="11">11 歲</option>
+              <option value="12">12 歲</option>
+              <option value="13">13+ 歲</option>
+            </select>
+          </div>
+          <div class="rec-field">
+            <label>建議老師數</label>
+            <select id="pickerTopN">
+              <option value="3">Top 3</option>
+              <option value="5" selected>Top 5</option>
+              <option value="8">Top 8</option>
+            </select>
+          </div>
+          <div class="rec-field">
+            <label>最少 Demo 筆數</label>
+            <select id="pickerMin">
+              <option value="1">≥ 1 筆</option>
+              <option value="2" selected>≥ 2 筆</option>
+              <option value="3">≥ 3 筆</option>
+            </select>
+          </div>
+          <div class="rec-field">
+            <label>&nbsp;</label>
+            <button class="reload-btn" id="pickerRun" style="background:var(--accent);color:#000;border-color:var(--accent);font-weight:700">🔍 分析並推薦</button>
+          </div>
+        </div>
+        <div id="pickerResults"></div>
+      </div>
+    </div>
+
+    <div class="grid" style="margin-top:20px">
+      <div class="card info">
+        <h3>📅 年齡 × 星期 熱力圖 <span class="sub">點格子看該組合的老師歷史表現</span></h3>
+        <div class="rec-sub" style="margin-bottom:12px;color:var(--text-dim)">顏色 = 該年齡段在該星期的團隊平均分數。⭐ 標記 = 該年齡段表現最好的星期。</div>
+        ${renderAgeWeekdayHeatmap()}
+      </div>
+    </div>
+
+    ${me? `
+    <div class="grid" style="margin-top:20px">
+      <div class="card">
+        <h3>🤝 ${escapeHtml(me.name)} 合作的老師 <span class="sub">${me.teacherCount} 位 · 點老師查看戰力表</span></h3>
+        ${renderMyTeachers(me)}
+      </div>
+    </div>` : ""}
+  `;
+
+  // 綁定事件
+  document.getElementById("selfConsSelect").addEventListener("change",(e)=>{
+    STATE.selfConsultant = e.target.value;
+    render();
+  });
+  document.getElementById("pickerRun").addEventListener("click", runPicker);
+  document.querySelectorAll(".aw-cell[data-key]").forEach(el=>{
+    el.addEventListener("click",()=>showAgeWeekdayDetail(el.dataset.key));
+  });
+  document.querySelectorAll(".rank-row[data-teacher]").forEach(el=>{
+    el.addEventListener("click",()=>{
+      STATE.currentRole = "full";
+      STATE.viewMode = "teacher";
+      STATE.selected = el.dataset.teacher;
+      render();
+      window.scrollTo({top:0, behavior:"smooth"});
+    });
+  });
+}
+
+function renderSelfStrictness(me){
+  const teamAvg = mean(STATE.rows.map(r=>r.avg).filter(x=>x!=null));
+  const myAvg = me.avg;
+  const delta = myAvg - teamAvg;
+
+  // 另一位最嚴格與最鬆的顧問（團隊對照）
+  const allCons = aggregateByConsultant().filter(c=>c.count>=2);
+  const strictest = [...allCons].sort((a,b)=>a.avg-b.avg)[0];
+  const lenient = [...allCons].sort((a,b)=>b.avg-a.avg)[0];
+
+  // 將 delta 轉換為百分比位置（-1.0 到 +1.0 對應 0%~100%）
+  const range = 1.0;
+  const pct = Math.max(0, Math.min(100, ((delta + range) / (range*2)) * 100));
+
+  let label, color;
+  if(delta <= -0.3){ label = "你給分偏嚴"; color = "var(--bad)"; }
+  else if(delta <= -0.15){ label = "你略偏嚴格"; color = "var(--warn)"; }
+  else if(delta >= 0.3){ label = "你給分偏鬆"; color = "var(--good)"; }
+  else if(delta >= 0.15){ label = "你略偏寬鬆"; color = "var(--info)"; }
+  else { label = "你中立客觀"; color = "var(--accent)"; }
+
+  return `
+    <div class="self-strictness">
+      <div>
+        <div class="ss-label">我的給分風格</div>
+        <div class="ss-name">${escapeHtml(me.name)}</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-faint);margin-top:4px">${me.count} 筆 · ${me.teacherCount} 位老師</div>
+      </div>
+      <div class="ss-gauge">
+        <div class="ss-gauge-bar"></div>
+        <div class="ss-gauge-pos" style="left:${pct}%;background:${color}"></div>
+        <div class="ss-gauge-ticks">
+          <span>嚴格 -1.0</span>
+          <span>團隊平均</span>
+          <span>寬鬆 +1.0</span>
+        </div>
+      </div>
+      <div class="ss-result" style="color:${color}">
+        ${label}
+        <span class="ss-delta">我 <b style="color:var(--text)">${myAvg.toFixed(2)}</b> vs 團隊 <b style="color:var(--text)">${teamAvg.toFixed(2)}</b> = <b>${delta>=0?'+':''}${delta.toFixed(2)}</b></span>
+        <span class="ss-delta" style="margin-top:4px;color:var(--text-faint)">團隊最嚴 ${escapeHtml(strictest.name)} ${strictest.avg.toFixed(2)} · 最鬆 ${escapeHtml(lenient.name)} ${lenient.avg.toFixed(2)}</span>
+      </div>
+    </div>
+  `;
+}
+
+// 年齡段 × 星期 熱力圖
+function aggregateAgeWeekday(filterFn){
+  // key: "ageGroup||weekday" (weekday 0-6, Sun-Sat)
+  const map = {};
+  STATE.rows.forEach(r=>{
+    if(r.avg==null) return;
+    if(filterFn && !filterFn(r)) return;
+    try{
+      const dt = new Date(r.date.replace(/\//g,"-"));
+      if(isNaN(dt)) return;
+      const wd = dt.getDay();
+      const key = r.ageGroup + "||" + wd;
+      if(!map[key]) map[key] = {ageGroup:r.ageGroup, weekday:wd, rows:[]};
+      map[key].rows.push(r);
+    }catch(e){}
+  });
+  return Object.values(map).map(e=>{
+    const avgs = e.rows.map(r=>r.avg).filter(x=>x!=null);
+    return {
+      ageGroup: e.ageGroup, weekday: e.weekday,
+      rows: e.rows, count: e.rows.length,
+      avg: avgs.length? mean(avgs): null
+    };
+  });
+}
+
+function renderAgeWeekdayHeatmap(){
+  const data = aggregateAgeWeekday();
+  if(!data.length) return `<div class="rec-empty">無足夠資料生成熱力圖</div>`;
+
+  const weekdays = [1,2,3,4,5,6,0];  // 週一~週日
+  const weekdayNames = {0:"週日", 1:"週一", 2:"週二", 3:"週三", 4:"週四", 5:"週五", 6:"週六"};
+  const ageOrder = ["幼齡 (3-5)","小學 (6-9)","高年級+ (10+)","未知"];
+
+  const lookup = {};
+  data.forEach(d=>{ lookup[d.ageGroup + "||" + d.weekday] = d; });
+
+  // 每個 ageGroup 找最佳星期
+  const bestPerAge = {};
+  ageOrder.forEach(ag=>{
+    let best = null;
+    weekdays.forEach(wd=>{
+      const c = lookup[ag + "||" + wd];
+      if(c && c.avg != null && c.count >= 2){
+        if(!best || c.avg > best.avg) best = c;
+      }
+    });
+    if(best) bestPerAge[ag] = best.weekday;
+  });
+
+  let html = `<div class="age-weekday-wrap"><table class="age-weekday"><thead><tr><th class="corner">年齡段 ＼ 星期</th>`;
+  weekdays.forEach(wd=>html += `<th>${weekdayNames[wd]}</th>`);
+  html += `<th>該段總平均</th></tr></thead><tbody>`;
+
+  ageOrder.forEach(ag=>{
+    if(!data.some(d=>d.ageGroup===ag)) return;
+    html += `<tr><th>${escapeHtml(ag)}</th>`;
+    const rowAvgs = [];
+    weekdays.forEach(wd=>{
+      const c = lookup[ag+"||"+wd];
+      if(!c){
+        html += `<td class="empty"></td>`;
+      } else {
+        const isBest = bestPerAge[ag] === wd;
+        const color = heatColor(c.avg);
+        html += `<td class="aw-cell ${isBest?'best-in-row':''}" data-key="${escapeAttr(ag+"||"+wd)}" style="background:${color}" title="${escapeAttr(ag)} · ${weekdayNames[wd]} · ${c.count} 場 · 均分 ${c.avg.toFixed(2)}${isBest?' (該年齡段最佳)':''}">
+          <span class="awv">${c.avg.toFixed(2)}</span>
+          <span class="awn">n=${c.count}</span>
+        </td>`;
+        rowAvgs.push(c.avg);
+      }
+    });
+    const rowAvg = rowAvgs.length? mean(rowAvgs): null;
+    html += `<td style="background:${heatColor(rowAvg)}"><span class="awv">${rowAvg?rowAvg.toFixed(2):'—'}</span></td></tr>`;
+  });
+  html += `</tbody></table></div>`;
+  return html;
+}
+
+function showAgeWeekdayDetail(key){
+  const [ageGroup, wd] = key.split("||");
+  const weekdayNames = {0:"週日", 1:"週一", 2:"週二", 3:"週三", 4:"週四", 5:"週五", 6:"週六"};
+  const weekdayNum = parseInt(wd);
+  const rows = STATE.rows.filter(r=>{
+    if(r.ageGroup !== ageGroup) return false;
+    try{ const dt = new Date(r.date.replace(/\//g,"-")); return !isNaN(dt) && dt.getDay()===weekdayNum; }
+    catch(e){ return false; }
+  });
+
+  // 按老師聚合
+  const teacherMap = {};
+  rows.forEach(r=>{
+    if(!teacherMap[r.teacher]) teacherMap[r.teacher] = {name:r.teacher, rows:[]};
+    teacherMap[r.teacher].rows.push(r);
+  });
+  const teachers = Object.values(teacherMap).map(t=>{
+    const avgs = t.rows.map(r=>r.avg).filter(x=>x!=null);
+    return {name:t.name, count:t.rows.length, avg:avgs.length?mean(avgs):null, rows:t.rows};
+  }).sort((a,b)=>(b.avg||0)-(a.avg||0));
+
+  const avgs = rows.map(r=>r.avg).filter(x=>x!=null);
+  const groupAvg = avgs.length? mean(avgs):null;
+
+  const modal = document.createElement("div");
+  modal.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px";
+  modal.innerHTML = `
+    <div style="background:var(--panel);border:1px solid var(--line);max-width:780px;width:100%;max-height:85vh;overflow:auto;padding:24px">
+      <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:18px">
+        <div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-faint);margin-bottom:4px">AGE × WEEKDAY DETAIL</div>
+          <h2 style="font-family:'Noto Serif TC',serif;margin:0;font-size:22px;color:var(--text)">
+            <span style="color:var(--info)">${escapeHtml(ageGroup)}</span> · <span style="color:var(--accent)">${weekdayNames[weekdayNum]}</span>
+          </h2>
+          <div style="font-size:12px;color:var(--text-dim);margin-top:4px">${rows.length} 場 · ${teachers.length} 位老師 · 組合均分 <b style="color:${scoreColor(groupAvg)}">${groupAvg?groupAvg.toFixed(2):'—'}</b></div>
+        </div>
+        <button onclick="this.closest('[style*=fixed]').remove()" style="background:var(--bg-2);border:1px solid var(--line-2);color:var(--text);padding:6px 14px;cursor:pointer;font-family:inherit">✕ 關閉</button>
+      </div>
+
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:10px">該組合表現最佳老師（由高到低）</div>
+      <div class="combo-list" style="margin-bottom:18px">
+        ${teachers.map((t,i)=>`<div class="combo-row mod-rank-row" data-teacher="${escapeAttr(t.name)}" style="grid-template-columns:22px 1fr auto auto">
+          <div class="rank">#${i+1}</div>
+          <div class="name teacher">${escapeHtml(t.name)}</div>
+          <div class="combo-score" style="color:${scoreColor(t.avg)}">${t.avg?t.avg.toFixed(2):'—'}</div>
+          <div class="combo-meta">${t.count} 場</div>
+        </div>`).join("")}
+      </div>
+
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:10px">所有 Demo 明細</div>
+      <div class="fb-list" style="max-height:360px">
+        ${rows.map(r=>rowHtml(r)).join("")}
+      </div>
+    </div>
+  `;
+  modal.addEventListener("click",(e)=>{ if(e.target===modal) modal.remove(); });
+  document.body.appendChild(modal);
+
+  // 關閉 modal 並跳到老師
+  modal.querySelectorAll(".mod-rank-row[data-teacher]").forEach(el=>{
+    el.addEventListener("click",()=>{
+      const name = el.dataset.teacher;
+      modal.remove();
+      STATE.currentRole = "full";
+      STATE.viewMode = "teacher";
+      STATE.selected = name;
+      render();
+      window.scrollTo({top:0, behavior:"smooth"});
+    });
+  });
+}
+
+function renderMyTeachers(me){
+  // 該顧問合作過的老師按分數排序
+  const teacherMap = {};
+  me.rows.forEach(r=>{
+    if(!teacherMap[r.teacher]) teacherMap[r.teacher] = {name:r.teacher, rows:[]};
+    teacherMap[r.teacher].rows.push(r);
+  });
+  const teachers = Object.values(teacherMap).map(t=>{
+    const avgs = t.rows.map(r=>r.avg).filter(x=>x!=null);
+    // 顧問跟老師的整體化學反應
+    const dimAvg = {};
+    DIMS.forEach(d=>{
+      const arr = t.rows.map(r=>r[d.key]).filter(x=>x!=null);
+      dimAvg[d.key] = arr.length? mean(arr):null;
+    });
+    // 這個老師在團隊的整體均分（非僅此顧問）
+    const overall = STATE.teachers.find(x=>x.name===t.name);
+    const overallAvg = overall? overall.avg:null;
+    const ourAvg = avgs.length? mean(avgs):null;
+    return {
+      name: t.name, count:t.rows.length, ourAvg, overallAvg,
+      delta: (ourAvg!=null && overallAvg!=null)? ourAvg - overallAvg : null,
+      dimAvg
+    };
+  }).sort((a,b)=>(b.ourAvg||0)-(a.ourAvg||0));
+
+  if(!teachers.length) return `<div class="empty">尚無資料</div>`;
+
+  return `<div class="combo-list">
+    ${teachers.map(t=>{
+      const col = t.delta==null?'var(--text-faint)':t.delta>=0.2?'var(--good)':t.delta<=-0.2?'var(--bad)':'var(--text-dim)';
+      const sign = t.delta==null?'—':(t.delta>=0?'+':'')+t.delta.toFixed(2);
+      return `<div class="combo-row rank-row" data-teacher="${escapeAttr(t.name)}" style="grid-template-columns:1fr auto auto auto auto">
+        <div class="name teacher">${escapeHtml(t.name)}</div>
+        <div class="combo-meta">${t.count} 場合作</div>
+        <div class="combo-meta">整體 ${t.overallAvg?t.overallAvg.toFixed(2):'—'}</div>
+        <div class="combo-score" style="color:${scoreColor(t.ourAvg)}">${t.ourAvg?t.ourAvg.toFixed(2):'—'}</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:${col};min-width:80px;text-align:right">
+          ${sign}<br><span style="font-size:9px;color:var(--text-faint);font-weight:400">vs 整體</span>
+        </div>
+      </div>`;
+    }).join("")}
+  </div>
+  <div class="legend-mini" style="margin-top:12px">
+    <span>Δ ≥ +0.20 = <span style="color:var(--good)">你跟這位老師特別合拍</span></span>
+    <span>Δ ≤ -0.20 = <span style="color:var(--bad)">這組化學反應欠佳，建議避免</span></span>
+  </div>`;
+}
+
+// 學員配對推薦器 — 輸入年齡，自動找最佳 weekday + 老師清單
+function runPicker(){
+  const ageRaw = document.getElementById("pickerAge").value;
+  if(!ageRaw){
+    document.getElementById("pickerResults").innerHTML = `<div class="rec-empty">請先選擇學員年齡</div>`;
+    return;
+  }
+  const age = parseInt(ageRaw);
+  const topN = parseInt(document.getElementById("pickerTopN").value) || 5;
+  const minCount = parseInt(document.getElementById("pickerMin").value) || 2;
+
+  // 判斷年齡段
+  const targetGroup = age < 6 ? "幼齡 (3-5)" : age < 10 ? "小學 (6-9)" : "高年級+ (10+)";
+  const weekdayNames = {0:"週日", 1:"週一", 2:"週二", 3:"週三", 4:"週四", 5:"週五", 6:"週六"};
+
+  // 抓該年齡段在每個 weekday 的表現
+  const wdMap = {};
+  STATE.rows.forEach(r=>{
+    if(r.ageGroup !== targetGroup || r.avg==null) return;
+    try{
+      const dt = new Date(r.date.replace(/\//g,"-"));
+      if(isNaN(dt)) return;
+      const wd = dt.getDay();
+      if(!wdMap[wd]) wdMap[wd] = [];
+      wdMap[wd].push(r);
+    }catch(e){}
+  });
+
+  if(!Object.keys(wdMap).length){
+    document.getElementById("pickerResults").innerHTML = `<div class="rec-empty">該年齡段（${targetGroup}）尚無任何資料</div>`;
+    return;
+  }
+
+  // 每個 weekday 的統計
+  const wdStats = Object.entries(wdMap).map(([wd, rows])=>{
+    const avgs = rows.map(r=>r.avg);
+    return {wd:parseInt(wd), wdName:weekdayNames[wd], count:rows.length, avg:mean(avgs), rows};
+  }).sort((a,b)=>b.avg-a.avg);
+
+  const bestWd = wdStats[0];
+
+  // 在最佳星期內，按老師聚合排名
+  const teacherMap = {};
+  bestWd.rows.forEach(r=>{
+    if(!teacherMap[r.teacher]) teacherMap[r.teacher] = {name:r.teacher, rows:[]};
+    teacherMap[r.teacher].rows.push(r);
+  });
+  const bestTeachers = Object.values(teacherMap).map(t=>{
+    const avgs = t.rows.map(r=>r.avg);
+    return {name:t.name, count:t.rows.length, avg:mean(avgs), rows:t.rows};
+  }).filter(t=>t.count >= minCount).sort((a,b)=>b.avg-a.avg);
+
+  // 同時也抓該年齡段 × 所有星期的老師排名（不限星期的 fallback）
+  const overallTeacherMap = {};
+  STATE.rows.forEach(r=>{
+    if(r.ageGroup !== targetGroup || r.avg==null) return;
+    if(!overallTeacherMap[r.teacher]) overallTeacherMap[r.teacher] = {name:r.teacher, rows:[]};
+    overallTeacherMap[r.teacher].rows.push(r);
+  });
+  const overallTeachers = Object.values(overallTeacherMap).map(t=>{
+    const avgs = t.rows.map(r=>r.avg);
+    return {name:t.name, count:t.rows.length, avg:mean(avgs)};
+  }).filter(t=>t.count >= minCount).sort((a,b)=>b.avg-a.avg).slice(0, topN);
+
+  const shownTeachers = bestTeachers.length >= 2 ? bestTeachers.slice(0,topN) : overallTeachers;
+  const fallbackNote = bestTeachers.length < 2;
+
+  document.getElementById("pickerResults").innerHTML = `
+    <div style="margin-top:18px;padding:14px 16px;background:rgba(255,209,102,.08);border:1px solid rgba(255,209,102,.3);border-left:3px solid var(--accent)">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:8px;font-weight:700">✨ 分析結果</div>
+      <div style="font-size:14px;line-height:1.8;color:var(--text)">
+        <b>${age} 歲</b> 學員屬於 <b style="color:var(--info)">${targetGroup}</b> 年齡段，歷史資料 ${Object.values(wdMap).reduce((a,b)=>a+b.length,0)} 筆。<br>
+        最佳安排日：<b style="color:var(--good);font-size:18px">${bestWd.wdName}</b>（團隊均分 <b>${bestWd.avg.toFixed(2)}</b>，n=${bestWd.count}）
+      </div>
+    </div>
+
+    <div style="margin-top:14px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-faint);letter-spacing:1px">星期分佈（高→低）</div>
+    <div class="combo-list" style="margin-top:8px;margin-bottom:18px">
+      ${wdStats.map((w,i)=>{
+        const pct = (w.avg/5*100).toFixed(0);
+        return `<div class="combo-row" style="grid-template-columns:22px 1fr auto auto;cursor:default">
+          <div class="rank">${i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1)}</div>
+          <div class="name" style="color:var(--text)">${w.wdName}</div>
+          <div class="combo-score" style="color:${scoreColor(w.avg)}">${w.avg.toFixed(2)}</div>
+          <div class="combo-meta">${w.count} 場</div>
+        </div>`;
+      }).join("")}
+    </div>
+
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px">
+      ${fallbackNote? `⚠ ${bestWd.wdName} 符合條件的老師太少，改列該年齡段所有老師`:`🏆 ${bestWd.wdName} × ${targetGroup} 表現 Top ${shownTeachers.length}`}
+    </div>
+    <div class="combo-list">
+      ${shownTeachers.map((t,i)=>`<div class="combo-row rank-row" data-teacher="${escapeAttr(t.name)}" style="grid-template-columns:22px 1fr auto auto auto">
+        <div class="rank">${i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1)}</div>
+        <div class="name teacher">${escapeHtml(t.name)}</div>
+        <div class="combo-score" style="color:${scoreColor(t.avg)}">${t.avg.toFixed(2)}</div>
+        <div class="combo-meta">${t.count} 場</div>
+        <div class="combo-meta" style="color:var(--accent);font-weight:500">→ 戰力表</div>
+      </div>`).join("")}
+    </div>
+  `;
+
+  // 綁定點擊
+  document.querySelectorAll("#pickerResults .rank-row[data-teacher]").forEach(el=>{
+    el.addEventListener("click",()=>{
+      STATE.currentRole = "full";
+      STATE.viewMode = "teacher";
+      STATE.selected = el.dataset.teacher;
+      render();
+      window.scrollTo({top:0, behavior:"smooth"});
+    });
+  });
+}
+
+// ==========================================================================
+// 📚 QA VIEW (教務視角)
+// ==========================================================================
+function renderQAView(){
+  const container = document.getElementById("qaContent");
+
+  container.innerHTML = `
+    <div class="grid g2" style="margin-bottom:20px">
+      <div class="card bad">
+        <h3>🚨 需關注老師清單 <span class="sub">異常訊號 · 點擊查看戰力表</span></h3>
+        ${renderAlertList()}
+      </div>
+      <div class="card warn-sec">
+        <h3>📊 團隊五項短板 <span class="sub">全團偏低的維度 · 建議安排內訓</span></h3>
+        ${renderTeamWeakness()}
+      </div>
+    </div>
+
+    <div class="grid" style="margin-bottom:20px">
+      <div class="card info">
+        <h3>📢 教務反饋追蹤 <span class="sub">依配合度排序 · 點擊查看完整戰力表</span></h3>
+        ${renderFeedbackTracking()}
+      </div>
+    </div>
+
+    <div class="grid" style="margin-bottom:20px">
+      <div class="card bad">
+        <h3>🔥 化學反應異常 <span class="sub">Bottom 5 組合 · 排班時要小心</span></h3>
+        ${renderTopCombos(5, "asc")}
+      </div>
+    </div>
+
+    <div class="grid" style="margin-bottom:20px">
+      <div class="card">
+        <h3>👥 老師完整排名 <span class="sub">多維度排序</span></h3>
+        ${renderFullTeacherRanking()}
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h3>🗓️ 日期視角 <span class="sub">點日期查看當日所有 Demo</span></h3>
+        ${renderDateQuickList()}
+      </div>
+    </div>
+  `;
+
+  // 綁定所有 rank-row 點擊跳轉
+  document.querySelectorAll(".rank-row[data-teacher]").forEach(el=>{
+    el.addEventListener("click",()=>{
+      STATE.currentRole = "full";
+      STATE.viewMode = "teacher";
+      STATE.selected = el.dataset.teacher;
+      render();
+      window.scrollTo({top:0, behavior:"smooth"});
+    });
+  });
+  document.querySelectorAll(".combo-row[data-pair]").forEach(el=>{
+    el.addEventListener("click",()=>{
+      const [teacher, consultant] = el.dataset.pair.split("||");
+      showCombinationDetail(teacher, consultant);
+    });
+  });
+  document.querySelectorAll(".rank-row[data-date]").forEach(el=>{
+    el.addEventListener("click",()=>{
+      STATE.currentRole = "full";
+      STATE.viewMode = "date";
+      STATE.selected = "D::" + el.dataset.date;
+      render();
+      window.scrollTo({top:0, behavior:"smooth"});
+    });
+  });
+}
+
+// 🚨 需關注老師清單
+function renderAlertList(){
+  const alerts = [];
+
+  STATE.teachers.forEach(t=>{
+    if(t.count < 2) return;
+
+    // 規則 1: 連續 3 場低於 3.5
+    const sorted = [...t.rows].sort((a,b)=>new Date(a.date.replace(/\//g,"-"))-new Date(b.date.replace(/\//g,"-")));
+    const last3 = sorted.slice(-3).map(r=>r.avg).filter(x=>x!=null);
+    if(last3.length >= 3 && last3.every(v=>v<3.5)){
+      alerts.push({
+        teacher: t.name, level:"bad", icon:"🚨",
+        reason: `最近 <b>3 場連續低分</b>：${last3.map(v=>v.toFixed(1)).join(" → ")}`,
+        stat: mean(last3).toFixed(2), statLabel: "近 3 場均分"
+      });
+    }
+
+    // 規則 2: 整體均分 < 3.2 且筆數 >= 3
+    if(t.avg != null && t.avg < 3.2 && t.count >= 3){
+      alerts.push({
+        teacher:t.name, level:"bad", icon:"⚠️",
+        reason: `整體均分 <b>${t.avg.toFixed(2)}</b> 偏低（團隊均分 ${mean(STATE.rows.map(r=>r.avg).filter(x=>x!=null)).toFixed(2)}）`,
+        stat: t.avg.toFixed(2), statLabel: "整體均分"
+      });
+    }
+
+    // 規則 3: 收到教務反饋後表現未改善
+    const adminRows = sorted.filter(r=>r.adminNote && r.adminNote.trim());
+    if(adminRows.length){
+      let noImprovement = 0;
+      adminRows.forEach(ar=>{
+        const idx = sorted.indexOf(ar);
+        const after = sorted.slice(idx+1, idx+4).map(r=>r.avg).filter(x=>x!=null);
+        const before = sorted.slice(Math.max(0,idx-3), idx).map(r=>r.avg).filter(x=>x!=null);
+        if(before.length && after.length){
+          if(mean(after) < mean(before) - 0.1) noImprovement++;
+        }
+      });
+      if(noImprovement > 0 && noImprovement >= Math.ceil(adminRows.length/2)){
+        alerts.push({
+          teacher:t.name, level:"warn", icon:"📉",
+          reason: `收到 <b>${adminRows.length} 次</b> 教務反饋，${noImprovement} 次後平均表現反而下降`,
+          stat: noImprovement + "/" + adminRows.length, statLabel:"未改善次數"
+        });
+      }
+    }
+
+    // 規則 4: 年齡段表現落差大
+    const byGroup = {};
+    t.rows.forEach(r=>{
+      if(r.avg==null) return;
+      if(!byGroup[r.ageGroup]) byGroup[r.ageGroup] = [];
+      byGroup[r.ageGroup].push(r.avg);
+    });
+    const groupAvgs = Object.entries(byGroup)
+      .filter(([g,arr])=>g !== "未知" && arr.length >= 2)
+      .map(([g,arr])=>({group:g, avg:mean(arr), n:arr.length}));
+    if(groupAvgs.length >= 2){
+      const best = [...groupAvgs].sort((a,b)=>b.avg-a.avg)[0];
+      const worst = [...groupAvgs].sort((a,b)=>a.avg-b.avg)[0];
+      if(best.avg - worst.avg >= 1.2 && worst.avg < 3.5){
+        alerts.push({
+          teacher:t.name, level:"warn", icon:"⚖️",
+          reason: `年齡掌握不均：<b>${best.group}</b> ${best.avg.toFixed(2)} vs <b>${worst.group}</b> ${worst.avg.toFixed(2)}（差 ${(best.avg-worst.avg).toFixed(2)}）`,
+          stat: (best.avg-worst.avg).toFixed(2), statLabel: "年齡落差"
+        });
+      }
+    }
+  });
+
+  if(!alerts.length) return `<div class="rec-empty" style="color:var(--good)">✅ 目前無異常訊號，團隊狀況良好</div>`;
+
+  // 同一老師合併（避免重複）
+  const grouped = {};
+  alerts.forEach(a=>{
+    if(!grouped[a.teacher]) grouped[a.teacher] = [];
+    grouped[a.teacher].push(a);
+  });
+
+  return `<div class="alert-grid">
+    ${Object.entries(grouped).map(([name, items])=>{
+      const worst = items.some(i=>i.level==="bad") ? "bad" : "warn";
+      const icon = items[0].icon;
+      return `<div class="alert-card ${worst} rank-row" data-teacher="${escapeAttr(name)}">
+        <div class="alert-icon">${icon}</div>
+        <div class="alert-body">
+          <div class="alert-name">${escapeHtml(name)}</div>
+          ${items.map(i=>`<div class="alert-reason">${i.reason}</div>`).join("")}
+        </div>
+        <div class="alert-stat">
+          <b>${items[0].stat}</b>
+          <span>${items[0].statLabel}</span>
+        </div>
+      </div>`;
+    }).join("")}
+  </div>`;
+}
+
+// 📊 團隊五項短板
+function renderTeamWeakness(){
+  const rankedDims = DIMS.map(d=>({
+    dim:d, avg: STATE.teamDimAvg[d.key], std: STATE.teamDimStd[d.key]
+  })).sort((a,b)=>a.avg-b.avg);
+
+  const weakest = rankedDims[0];
+  const recommendations = {
+    ENG: "建議安排「聲音感染力 / 教學熱情」內訓；可找熱情度 5 的老師做示範分享",
+    PRO: "建議安排「系統操作 / 糾錯技巧」培訓；著重錯誤指正的時機與方式",
+    PAC: "建議安排「教案節奏管理」內訓；可用碼表練習各段時間控制",
+    INT: "建議安排「丟球技巧 / 引導式提問」培訓；重點在低程度學員的引導",
+    RAP: "建議安排「兒童心理 / 親和力」培訓；針對害羞/內向孩子的破冰技巧"
+  };
+
+  return `
+    <div class="dim-grid" style="margin-bottom:16px">
+      ${rankedDims.map((r,i)=>{
+        const pct = (r.avg/5*100).toFixed(0);
+        const cls = r.avg>=4?'high':r.avg>=3.5?'mid':'low';
+        const isWeakest = i === 0;
+        return `<div class="dim-row" style="grid-template-columns:80px 1fr 56px 44px">
+          <div class="dname">${isWeakest?'<span style="color:var(--bad)">⚠</span> ':''}${r.dim.label}<br><span style="color:var(--text-faint)">${r.dim.key}</span></div>
+          <div class="dbar" style="--p:${pct}%"></div>
+          <div class="dval ${cls}">${r.avg.toFixed(2)}</div>
+          <div class="dname" style="text-align:right;font-size:10px">σ${r.std.toFixed(2)}</div>
+        </div>`;
+      }).join("")}
+    </div>
+    <div class="training-card">
+      <div class="train-dim">⚡ 優先內訓：${weakest.dim.label} (${weakest.dim.key})</div>
+      <div class="train-stat">團隊均分 ${weakest.avg.toFixed(2)} · 標準差 σ${weakest.std.toFixed(2)} · ${weakest.std>0.8?'老師間差異大，先個別輔導再團訓':'整體一致偏低，適合團體內訓'}</div>
+      <div class="train-rec"><b>建議方向：</b>${recommendations[weakest.dim.key]}</div>
+    </div>
+  `;
+}
+
+// 📢 教務反饋追蹤
+function renderFeedbackTracking(){
+  // 抓所有有教務反饋的筆 + 事件前後分析
+  const teacherEvents = {};
+  STATE.teachers.forEach(t=>{
+    const sorted = [...t.rows].sort((a,b)=>new Date(a.date.replace(/\//g,"-"))-new Date(b.date.replace(/\//g,"-")));
+    const events = [];
+    sorted.forEach((r, i)=>{
+      if(r.adminNote && r.adminNote.trim()){
+        const before = sorted.slice(Math.max(0,i-3), i).map(x=>x.avg).filter(x=>x!=null);
+        const after = sorted.slice(i+1, i+4).map(x=>x.avg).filter(x=>x!=null);
+        events.push({
+          date:r.date, note:r.adminNote, avg:r.avg,
+          beforeAvg:before.length?mean(before):null,
+          afterAvg:after.length?mean(after):null,
+          delta: (before.length && after.length)? mean(after)-mean(before): null
+        });
+      }
+    });
+    if(events.length) teacherEvents[t.name] = events;
+  });
+
+  if(!Object.keys(teacherEvents).length) return `<div class="rec-empty">尚無教務反饋紀錄</div>`;
+
+  // 計算每位老師的配合度（有有效前後對照的 delta 平均）
+  const cooperation = Object.entries(teacherEvents).map(([name, events])=>{
+    const withDelta = events.filter(e=>e.delta!=null);
+    const avgDelta = withDelta.length? mean(withDelta.map(e=>e.delta)):null;
+    return {name, events, eventCount:events.length, avgDelta, validCount:withDelta.length};
+  }).sort((a,b)=>(b.avgDelta||0)-(a.avgDelta||0));
+
+  return `<div class="alert-grid">
+    ${cooperation.map(c=>{
+      let level, icon, label;
+      if(c.avgDelta == null){
+        level = "info"; icon = "📄"; label = "無法判斷";
+      } else if(c.avgDelta >= 0.3){
+        level = "info"; icon = "✅"; label = "配合度高";
+      } else if(c.avgDelta >= 0){
+        level = "info"; icon = "🟡"; label = "略有改善";
+      } else if(c.avgDelta >= -0.3){
+        level = "warn"; icon = "🟠"; label = "無明顯改善";
+      } else {
+        level = "bad"; icon = "🔴"; label = "反饋後退步";
+      }
+      return `<div class="alert-card ${level} rank-row" data-teacher="${escapeAttr(c.name)}" style="border-left-color:${c.avgDelta==null?'var(--info)':c.avgDelta>=0.3?'var(--good)':c.avgDelta>=0?'var(--accent)':c.avgDelta>=-0.3?'var(--warn)':'var(--bad)'}">
+        <div class="alert-icon">${icon}</div>
+        <div class="alert-body">
+          <div class="alert-name">${escapeHtml(c.name)}</div>
+          <div class="alert-reason">
+            共 <b>${c.eventCount} 次</b>教務反饋 · ${c.validCount} 次可分析前後 · 最新：<b>${c.events[c.events.length-1].date}</b>
+          </div>
+        </div>
+        <div class="alert-stat">
+          <b style="color:${c.avgDelta==null?'var(--text-faint)':c.avgDelta>=0?'var(--good)':'var(--bad)'}">${c.avgDelta==null?'—':(c.avgDelta>=0?'+':'')+c.avgDelta.toFixed(2)}</b>
+          <span>${label}</span>
+        </div>
+      </div>`;
+    }).join("")}
+  </div>`;
+}
+
+// 👥 老師完整排名
+function renderFullTeacherRanking(){
+  const teachers = STATE.teachers.filter(t=>t.count >= 1).sort((a,b)=>(b.avg||0)-(a.avg||0));
+  return `<div class="combo-list">
+    ${teachers.map((t,i)=>{
+      return `<div class="combo-row rank-row" data-teacher="${escapeAttr(t.name)}" style="grid-template-columns:30px 1fr auto auto auto auto auto auto auto">
+        <div class="rank">#${i+1}</div>
+        <div class="name teacher">${escapeHtml(t.name)}</div>
+        <div class="combo-score" style="color:${scoreColor(t.avg)}">${t.avg?t.avg.toFixed(2):'—'}</div>
+        <div class="combo-meta">${t.count} 筆</div>
+        ${DIMS.map(d=>`<div class="combo-meta" title="${d.label}"><span style="color:${d.color}">${d.key}</span> ${t.dimAvg[d.key]?t.dimAvg[d.key].toFixed(1):'—'}</div>`).join("")}
+      </div>`;
+    }).join("")}
+  </div>`;
+}
+
+// 🗓️ 日期列表
+function renderDateQuickList(){
+  const dates = aggregateByDate().sort((a,b)=>new Date(b.date.replace(/\//g,"-")) - new Date(a.date.replace(/\//g,"-")));
+  return `<div class="combo-list" style="max-height:400px;overflow-y:auto">
+    ${dates.map(d=>{
+      const lowCount = d.rows.filter(r=>r.avg!=null && r.avg<3.5).length;
+      const pctLow = (lowCount/d.count*100).toFixed(0);
+      return `<div class="combo-row rank-row" data-date="${escapeAttr(d.date)}" style="grid-template-columns:110px 1fr auto auto auto">
+        <div class="name" style="color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:12px">${d.date}<br><span style="font-size:10px;color:var(--text-faint)">${d.weekday}</span></div>
+        <div class="combo-meta">${d.count} 場 · ${d.teacherCount} 位老師</div>
+        <div class="combo-score" style="color:${scoreColor(d.avg)}">${d.avg?d.avg.toFixed(2):'—'}</div>
+        ${lowCount>0? `<div class="combo-meta" style="color:var(--bad)">⚠ ${lowCount} 場低分 (${pctLow}%)</div>`:`<div class="combo-meta" style="color:var(--good)">✓ 正常</div>`}
+        <div class="combo-meta" style="color:var(--accent)">→ 看詳情</div>
+      </div>`;
+    }).join("")}
+  </div>`;
 }
 
 // ---------- TEACHER ANALYSIS (pure math) ----------
@@ -2786,6 +3689,16 @@ function downloadFile(filename, content, type){
 document.getElementById("reloadBtn").addEventListener("click",()=>fetchData(STATE.dataSource==="fallback"));
 document.getElementById("srcLive").addEventListener("click",()=>fetchData(false));
 document.getElementById("srcFallback").addEventListener("click",()=>fetchData(true));
+
+// 角色切換
+document.querySelectorAll("#roleSwitcher button").forEach(b=>{
+  b.addEventListener("click",()=>{
+    STATE.currentRole = b.dataset.role;
+    render();
+    window.scrollTo({top:0, behavior:"smooth"});
+  });
+});
+
 fetchData(false);
 </script>
 </body>
