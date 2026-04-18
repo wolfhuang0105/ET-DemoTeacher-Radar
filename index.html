@@ -245,25 +245,26 @@ function processGvizTable(table){
 }
 
 function processRows(data){
-  let headerIdx = -1;
+  // gviz 的 headers=0 會把前面的說明列和標題列都吞掉，只剩下資料列（偶爾前面還有 1-2 列空白）
+  // 策略：從「第一個首欄是日期格式」的列開始讀，不再依賴「找到 DEMO日期 標題」
+  const isDate = s => /^\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}$/.test(String(s||"").trim());
+  let startIdx = -1;
   for(let i=0;i<data.length;i++){
-    const cell = data[i] && data[i][0] ? String(data[i][0]).trim() : "";
-    if(cell === "DEMO日期"){ headerIdx = i; break; }
+    if(data[i] && isDate(data[i][0])){ startIdx = i; break; }
   }
-  if(headerIdx === -1){
-    // 把前 10 列第 1 欄的內容列出來幫助 debug
+  if(startIdx === -1){
     const preview = data.slice(0,10).map((r,i)=>`[${i}] "${(r && r[0])? String(r[0]).slice(0,30): "(空)"}"`).join(" / ");
-    throw new Error(`找不到標題列 (DEMO日期)。前 10 列首欄預覽：${preview}`);
+    throw new Error(`找不到任何日期格式的資料列。前 10 列首欄預覽：${preview}`);
   }
 
   const rows = [];
-  for(let i=headerIdx+1;i<data.length;i++){
+  for(let i=startIdx;i<data.length;i++){
     const r = data[i];
-    if(!r[0] || !r[1]) continue;
+    if(!r || !r[0] || !r[1]) continue;
     const date = String(r[0]).trim();
     const teacher = String(r[1]).trim();
     if(!date || !teacher) continue;
-    if(teacher === "老師名稱") continue;
+    if(!isDate(date)) continue;  // 跳過非日期列（避免吃到任何意外的尾部說明）
     const parseNum = v => { const n = parseFloat(String(v).replace(/[^0-9.]/g,"")); return isNaN(n)?null:n; };
     const row = {
       date, teacher,
