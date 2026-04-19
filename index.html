@@ -270,6 +270,23 @@ h1 small{display:block;font-family:"JetBrains Mono",monospace;font-size:11px;col
 .age-weekday td.best-in-row::before{content:"★ 最佳";position:absolute;top:-9px;right:-4px;color:#000;background:#ffb703;font-size:9px;font-weight:800;padding:2px 5px;letter-spacing:.5px;border:1px solid #000;line-height:1;z-index:4;box-shadow:0 1px 2px rgba(0,0,0,.5)}
 .age-weekday td.worst-in-row{box-shadow:inset 0 0 0 2px #fff, inset 0 0 0 5px #d90429, inset 0 0 0 6px #000;z-index:2;overflow:visible}
 .age-weekday td.worst-in-row::before{content:"▼ 最差";position:absolute;top:-9px;right:-4px;color:#fff;background:#d90429;font-size:9px;font-weight:800;padding:2px 5px;letter-spacing:.5px;border:1px solid #000;line-height:1;z-index:4;box-shadow:0 1px 2px rgba(0,0,0,.5)}
+/* 次佳 / 第三佳 — 平常完全隱藏，只有點左側年齡按鈕後才顯示並閃動 */
+.age-weekday tr.row-active td.second-in-row,.age-weekday tr.row-active td.third-in-row{z-index:2;overflow:visible;box-shadow:inset 0 0 0 2px #fff, inset 0 0 0 5px #45a0ff, inset 0 0 0 6px #000}
+.age-weekday tr.row-active td.second-in-row::before,.age-weekday tr.row-active td.third-in-row::before{position:absolute;top:-9px;right:-4px;font-size:9px;font-weight:800;padding:2px 5px;letter-spacing:.5px;border:1px solid #000;line-height:1;z-index:4;box-shadow:0 1px 2px rgba(0,0,0,.5);color:#000;background:#45a0ff}
+.age-weekday tr.row-active td.second-in-row::before{content:"② 次佳"}
+.age-weekday tr.row-active td.third-in-row::before{content:"③ 第三"}
+.age-weekday tr.row-active td.second-in-row{animation:pulseAlt 1.4s ease-in-out infinite}
+.age-weekday tr.row-active td.third-in-row{animation:pulseAlt 1.4s ease-in-out infinite;animation-delay:.7s}
+@keyframes pulseAlt{
+  0%,100%{box-shadow:inset 0 0 0 2px #fff, inset 0 0 0 5px #45a0ff, inset 0 0 0 6px #000, 0 0 0 0 rgba(69,160,255,.7)}
+  50%    {box-shadow:inset 0 0 0 2px #fff, inset 0 0 0 5px #45a0ff, inset 0 0 0 6px #000, 0 0 0 6px rgba(69,160,255,0)}
+}
+/* 年齡標籤可點樣式 */
+.age-weekday tbody th.age-label.clickable{cursor:pointer;transition:.15s;user-select:none}
+.age-weekday tbody th.age-label.clickable:hover{background:var(--panel-2);color:var(--accent)}
+.age-weekday tbody th.age-label .age-cta{display:block;font-family:"JetBrains Mono",monospace;font-size:9px;font-weight:700;color:var(--info);letter-spacing:.5px;margin-top:3px;padding:2px 6px;background:rgba(69,160,255,.12);border:1px solid var(--info);text-align:center;transition:.15s}
+.age-weekday tbody th.age-label.clickable:hover .age-cta{background:var(--info);color:#000}
+.age-weekday tbody tr.row-active th.age-label .age-cta{background:var(--info);color:#000}
 
 /* Alert cards (QA view) */
 .alert-grid{display:grid;gap:10px}
@@ -1807,7 +1824,7 @@ function renderConsultantView(){
     <div class="grid" style="margin-top:20px">
       <div class="card info">
         <h3>📅 年齡 × 星期 熱力圖 <span class="sub">點格子看該組合的老師歷史表現</span></h3>
-        <div class="rec-sub" style="margin-bottom:12px;color:var(--text-dim)">顏色 = 該年齡段在該星期的團隊平均分數。★ = 該年齡段表現最好的星期，▼ = 該年齡段表現最差的星期（優先比較 n≥2 的格子，樣本不足時納入 n=1 格子）。</div>
+        <div class="rec-sub" style="margin-bottom:12px;color:var(--text-dim)">顏色 = 該年齡段在該星期的團隊平均分數。★ 最佳（金）· ▼ 最差（紅）· ② 次佳 / ③ 第三（藍）。<b style="color:var(--info)">點左側年齡段標籤可啟動該列備選日的閃動提示</b>。優先比較 n≥2 的格子，樣本不足時納入 n=1 格子。</div>
         ${renderAgeWeekdayHeatmap()}
       </div>
     </div>
@@ -1829,6 +1846,26 @@ function renderConsultantView(){
   document.getElementById("pickerRun").addEventListener("click", runPicker);
   document.querySelectorAll(".aw-cell[data-key]").forEach(el=>{
     el.addEventListener("click",()=>showAgeWeekdayDetail(el.dataset.key));
+  });
+  // 年齡標籤點擊 → 高亮該列的次佳 / 第三 備選日
+  document.querySelectorAll(".age-label.clickable[data-age-trigger]").forEach(el=>{
+    el.addEventListener("click",(ev)=>{
+      ev.stopPropagation();
+      const tr = el.closest("tr");
+      const wasActive = tr.classList.contains("row-active");
+      // 先清除所有列的狀態
+      document.querySelectorAll(".age-weekday tr.row-active").forEach(r=>{
+        r.classList.remove("row-active");
+        const cta = r.querySelector(".age-cta");
+        if(cta) cta.textContent = "點我看備選";
+      });
+      // 再點自己 → 切換關閉；點其他列 → 啟動該列
+      if(!wasActive){
+        tr.classList.add("row-active");
+        const cta = el.querySelector(".age-cta");
+        if(cta) cta.textContent = "✓ 再點關閉";
+      }
+    });
   });
   document.querySelectorAll(".rank-row[data-teacher]").forEach(el=>{
     el.addEventListener("click",()=>{
@@ -1924,23 +1961,33 @@ function renderAgeWeekdayHeatmap(){
   const lookup = {};
   data.forEach(d=>{ lookup[d.ageGroup + "||" + d.weekday] = d; });
 
-  // 每個 ageGroup 找最佳 / 最差星期
-  // 策略：優先用 n≥2 的格子比較；若該 row 達門檻的格子少於 2 個，放寬為 n≥1
-  // 前提：該 row 至少要有 2 個有資料的格子，否則無比較意義
+  // 每個 ageGroup 找最佳 / 次佳 / 第三 / 最差星期
+  // 規則：
+  //  - 該列至少 2 格有資料才處理（否則無比較意義，標也沒用）
+  //  - 優先用 n≥2 的格子比較；樣本不足時放寬為 n≥1
+  //  - 只有 3 格以上才標最差（2 格時標最差沒意義，把第 2 格當次佳）
   const bestPerAge = {};
+  const secondPerAge = {};
+  const thirdPerAge = {};
   const worstPerAge = {};
   ageOrder.forEach(ag=>{
     const cells = weekdays.map(wd=>lookup[ag+"||"+wd]).filter(c=>c && c.avg!=null);
     if(cells.length < 2) return;
     const strong = cells.filter(c=>c.count >= 2);
     const pool = strong.length >= 2 ? strong : cells;
-    let best = null, worst = null;
-    pool.forEach(c=>{
-      if(!best || c.avg > best.avg) best = c;
-      if(!worst || c.avg < worst.avg) worst = c;
-    });
+    const sorted = [...pool].sort((a,b)=>b.avg - a.avg);
+    const best = sorted[0];
     if(best) bestPerAge[ag] = best.weekday;
-    if(worst && best && best.weekday !== worst.weekday) worstPerAge[ag] = worst.weekday;
+    // 只有 3 格以上才標最差
+    if(sorted.length >= 3){
+      const worst = sorted[sorted.length-1];
+      if(worst && best && best.weekday !== worst.weekday) worstPerAge[ag] = worst.weekday;
+    }
+    // 次佳、第三佳（跳過已被標為最佳/最差的）
+    const taken = new Set([bestPerAge[ag], worstPerAge[ag]]);
+    const alts = sorted.filter(c=>!taken.has(c.weekday));
+    if(alts[0]) secondPerAge[ag] = alts[0].weekday;
+    if(alts[1]) thirdPerAge[ag]  = alts[1].weekday;
   });
 
   let html = `<div class="age-weekday-wrap"><table class="age-weekday"><thead><tr><th class="corner">年齡段 ＼ 星期</th>`;
@@ -1949,7 +1996,8 @@ function renderAgeWeekdayHeatmap(){
 
   ageOrder.forEach(ag=>{
     if(!data.some(d=>d.ageGroup===ag)) return;
-    html += `<tr><th>${escapeHtml(ag)}</th>`;
+    const hasAlt = secondPerAge[ag]!=null || thirdPerAge[ag]!=null;
+    html += `<tr data-age="${escapeAttr(ag)}"><th class="age-label${hasAlt?' clickable':''}" ${hasAlt?`data-age-trigger="${escapeAttr(ag)}" title="點擊高亮次佳 / 第三備選日"`:''}>${escapeHtml(ag)}${hasAlt?'<span class="age-cta">點我看備選</span>':''}</th>`;
     const rowAvgs = [];
     weekdays.forEach(wd=>{
       const c = lookup[ag+"||"+wd];
@@ -1958,9 +2006,15 @@ function renderAgeWeekdayHeatmap(){
       } else {
         const isBest = bestPerAge[ag] === wd;
         const isWorst = worstPerAge[ag] === wd;
+        const isSecond = secondPerAge[ag] === wd;
+        const isThird = thirdPerAge[ag] === wd;
         const color = heatColor(c.avg);
-        const cls = isBest ? 'best-in-row' : (isWorst ? 'worst-in-row' : '');
-        const tag = isBest ? ' (該年齡段最佳)' : (isWorst ? ' (該年齡段最差)' : '');
+        let cls = '';
+        let tag = '';
+        if(isBest){ cls = 'best-in-row'; tag = ' (該年齡段最佳)'; }
+        else if(isWorst){ cls = 'worst-in-row'; tag = ' (該年齡段最差)'; }
+        else if(isSecond){ cls = 'second-in-row'; tag = ' (該年齡段次佳)'; }
+        else if(isThird){ cls = 'third-in-row'; tag = ' (該年齡段第三)'; }
         html += `<td class="aw-cell ${cls}" data-key="${escapeAttr(ag+"||"+wd)}" style="background:${color}" title="${escapeAttr(ag)} · ${weekdayNames[wd]} · ${c.count} 場 · 均分 ${c.avg.toFixed(2)}${tag}">
           <span class="awv">${c.avg.toFixed(2)}</span>
           <span class="awn">n=${c.count}</span>
