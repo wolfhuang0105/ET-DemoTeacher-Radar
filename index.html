@@ -40,7 +40,7 @@ h1 small{display:block;font-family:"JetBrains Mono",monospace;font-size:11px;col
   .layout{grid-template-columns:1fr}
   .tlist{position:static !important;max-height:none !important;margin-bottom:20px}
   .tlist ul{max-height:300px;overflow-y:auto}
-  .tlist .view-tabs,.tlist h2,.tlist .sort-btns{position:static !important}
+  .tlist .view-tabs,.tlist h2,.tlist .sort-btns,.tlist .search-wrap,.tlist .col-hdr,.tlist .dim-sort{position:static !important}
 }
 .role-view .layout{display:grid !important}  /* 確保在 role-view 內也套用 grid */
 .role-view:not(.active) .layout{display:none !important}
@@ -55,6 +55,26 @@ h1 small{display:block;font-family:"JetBrains Mono",monospace;font-size:11px;col
 .tlist .sort-btns button{flex:1;appearance:none;background:none;border:none;border-right:1px solid var(--line);color:var(--text-faint);padding:8px 4px;font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:1px;cursor:pointer;text-transform:uppercase}
 .tlist .sort-btns button:last-child{border-right:none}
 .tlist .sort-btns button.active{color:var(--accent);background:var(--panel)}
+/* 側欄搜尋框 */
+.tlist .search-wrap{padding:10px 12px;background:var(--bg-2);border-bottom:1px solid var(--line);position:sticky;top:66px;z-index:2}
+.tlist .search-wrap input{width:100%;appearance:none;background:var(--panel);border:1px solid var(--line);color:var(--text);padding:7px 10px;font-family:inherit;font-size:12px;box-sizing:border-box;outline:none;transition:.1s}
+.tlist .search-wrap input:focus{border-color:var(--accent)}
+.tlist .search-wrap input::placeholder{color:var(--text-faint)}
+/* 欄位標題列（可排序） */
+.tlist .col-hdr{display:flex;background:var(--bg-2);border-bottom:1px solid var(--line);position:sticky;top:112px;z-index:2}
+.tlist .col-hdr button{appearance:none;background:none;border:none;border-right:1px solid var(--line);color:var(--text-faint);padding:8px 4px;font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:1px;cursor:pointer;text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:4px;transition:.1s}
+.tlist .col-hdr button:last-child{border-right:none}
+.tlist .col-hdr button:hover{background:var(--panel-2);color:var(--text)}
+.tlist .col-hdr button.active{color:var(--accent);background:var(--panel);font-weight:700}
+.tlist .col-hdr button .arr{font-size:9px;opacity:.85}
+/* 能力項排序列（僅老師 tab） */
+.tlist .dim-sort{display:flex;background:var(--bg-2);border-bottom:1px solid var(--line);position:sticky;top:147px;z-index:2}
+.tlist .dim-sort button{flex:1;appearance:none;background:none;border:none;border-right:1px solid var(--line);color:var(--text-faint);padding:7px 2px;font-family:"JetBrains Mono",monospace;font-size:9px;letter-spacing:.5px;cursor:pointer;text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:3px;transition:.1s}
+.tlist .dim-sort button:last-child{border-right:none}
+.tlist .dim-sort button:hover{background:var(--panel-2);color:var(--text)}
+.tlist .dim-sort button.active{color:var(--accent);background:var(--panel);font-weight:700}
+.tlist .dim-sort button .arr{font-size:9px;opacity:.85}
+.tlist .empty-search{padding:20px 16px;text-align:center;color:var(--text-faint);font-size:12px;font-family:"JetBrains Mono",monospace}
 .tlist ul{list-style:none;margin:0;padding:0}
 .tlist li{border-bottom:1px solid var(--line)}
 .tlist li button{width:100%;appearance:none;background:none;border:none;color:inherit;text-align:left;cursor:pointer;padding:12px 16px;display:flex;align-items:center;gap:12px;transition:.1s;font-family:inherit}
@@ -253,6 +273,14 @@ h1 small{display:block;font-family:"JetBrains Mono",monospace;font-size:11px;col
 .consultant-picker label{font-family:"JetBrains Mono",monospace;font-size:10px;color:var(--text-faint);letter-spacing:1.5px;text-transform:uppercase}
 .consultant-picker select{appearance:none;background:var(--panel);border:1px solid var(--line-2);color:var(--text);padding:8px 14px;font-family:"Noto Sans TC",sans-serif;font-size:13px;cursor:pointer;min-width:140px}
 .consultant-picker select:focus{outline:none;border-color:var(--accent)}
+/* 顧問按鈕組（「我是」） */
+.consultant-picker .cons-btns{display:flex;flex-wrap:wrap;gap:0;border:1px solid var(--line-2);background:var(--panel)}
+.consultant-picker .cons-btns button{appearance:none;background:none;border:none;border-right:1px solid var(--line-2);color:var(--text-dim);padding:8px 14px;font-family:"Noto Sans TC",sans-serif;font-size:13px;cursor:pointer;transition:.1s;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.consultant-picker .cons-btns button:last-child{border-right:none}
+.consultant-picker .cons-btns button:hover:not(.active){background:var(--panel-2);color:var(--text)}
+.consultant-picker .cons-btns button.active{background:var(--accent);color:#000;font-weight:700}
+.consultant-picker .cons-btns button .cnt{font-family:"JetBrains Mono",monospace;font-size:10px;color:var(--text-faint)}
+.consultant-picker .cons-btns button.active .cnt{color:rgba(0,0,0,.65)}
 
 /* Age heatmap (weekday × age group) */
 .age-weekday-wrap{overflow-x:auto}
@@ -445,7 +473,15 @@ let STATE = {
   rows: [], teachers: [], teamDimAvg: {}, teamDimStd: {},
   selected: "__ALL__",
   viewMode: "teacher",  // "teacher" | "consultant" | "date"
-  sort: "count", charts: [],
+  // 每個 tab 獨立的排序狀態。by: 欄位名, dir: "desc"|"asc"（兩段循環）
+  sort: {
+    teacher:    { by: "avg",  dir: "desc" },  // by: "count"|"name"|"avg"|"ENG"|"PRO"|"PAC"|"INT"|"RAP"
+    consultant: { by: "avg",  dir: "desc" },  // by: "name"|"avg"
+    date:       { by: "date", dir: "desc" },  // by: "date"|"avg"
+  },
+  // 每個 tab 獨立的搜尋字串
+  search: { teacher: "", consultant: "", date: "" },
+  charts: [],
   dataSource: "unknown",
   lastFetchRaw: null, lastFetchJson: null, lastArray: null, lastAnalysis: null,
   currentRole: "consultant",  // "consultant" | "qa" | "full"
@@ -760,6 +796,43 @@ function renderKPI(){
   `;
 }
 
+// ---------- helpers: 排序與篩選 ----------
+// 點擊欄位標題：同欄位則切換方向（兩段循環 desc<->asc），換欄位則用該欄位的預設方向
+function toggleSort(tab, by){
+  const cur = STATE.sort[tab];
+  if(cur.by === by){
+    cur.dir = cur.dir === "desc" ? "asc" : "desc";
+  } else {
+    cur.by = by;
+    // 預設方向：名稱類用 asc（A→Z / 小→大直覺較差，日期 desc 最新在前），分數/筆數/能力項用 desc
+    cur.dir = (by === "name") ? "asc" : "desc";
+  }
+}
+function sortArrow(tab, by){
+  const s = STATE.sort[tab];
+  if(s.by !== by) return "";
+  return s.dir === "desc" ? "▼" : "▲";
+}
+function cmpNum(a, b, dir){
+  const av = a==null ? -Infinity : a;
+  const bv = b==null ? -Infinity : b;
+  return dir === "desc" ? (bv - av) : (av - bv);
+}
+function cmpStr(a, b, dir){
+  const c = (a||"").localeCompare(b||"");
+  return dir === "desc" ? -c : c;
+}
+function cmpDate(a, b, dir){
+  const av = new Date((a||"").replace(/\//g,"-")).getTime() || 0;
+  const bv = new Date((b||"").replace(/\//g,"-")).getTime() || 0;
+  return dir === "desc" ? (bv - av) : (av - bv);
+}
+// 老師/顧問/日期的字串搜尋比對（支援大小寫與部份比對）
+function matchSearch(text, kw){
+  if(!kw) return true;
+  return (text||"").toLowerCase().includes(kw.toLowerCase());
+}
+
 function renderTeacherList(){
   const el = document.getElementById("tlist");
   const mode = STATE.viewMode;
@@ -773,55 +846,88 @@ function renderTeacherList(){
   `;
 
   if(mode === "teacher"){
-    let sorted = [...STATE.teachers];
-    if(STATE.sort === "count") sorted.sort((a,b)=>b.count-a.count);
-    else if(STATE.sort === "avg") sorted.sort((a,b)=>(b.avg||0)-(a.avg||0));
-    else sorted.sort((a,b)=>a.name.localeCompare(b.name));
-    const maxCount = Math.max(...sorted.map(t=>t.count), 1);
+    const s = STATE.sort.teacher;
+    const kw = STATE.search.teacher;
+    let filtered = STATE.teachers.filter(t => matchSearch(t.name, kw));
+    // 排序
+    filtered.sort((a,b)=>{
+      if(s.by === "count") return cmpNum(a.count, b.count, s.dir);
+      if(s.by === "name")  return cmpStr(a.name, b.name, s.dir);
+      if(s.by === "avg")   return cmpNum(a.avg, b.avg, s.dir);
+      // 能力項: ENG/PRO/PAC/INT/RAP
+      return cmpNum(a.dimAvg?.[s.by], b.dimAvg?.[s.by], s.dir);
+    });
+    const maxCount = Math.max(...STATE.teachers.map(t=>t.count), 1);
+    const isDimSort = ["ENG","PRO","PAC","INT","RAP"].includes(s.by);
+
     el.innerHTML = tabs + `
-      <h2>老師清單 · ${STATE.teachers.length} 位</h2>
-      <div class="sort-btns">
-        <button data-s="count" class="${STATE.sort==='count'?'active':''}">筆數</button>
-        <button data-s="avg" class="${STATE.sort==='avg'?'active':''}">分數</button>
-        <button data-s="name" class="${STATE.sort==='name'?'active':''}">名稱</button>
+      <h2>老師清單 · ${STATE.teachers.length} 位${kw?` · 符合 ${filtered.length} 位`:""}</h2>
+      <div class="search-wrap">
+        <input type="search" id="tlistSearch" placeholder="🔍 搜尋老師名稱…" value="${escapeAttr(kw)}" autocomplete="off">
+      </div>
+      <div class="col-hdr" style="grid-template-columns:1fr 1fr 1fr;display:grid">
+        <button data-s="count" class="${s.by==='count'?'active':''}">數量 <span class="arr">${sortArrow("teacher","count")}</span></button>
+        <button data-s="name"  class="${s.by==='name'?'active':''}">名稱 <span class="arr">${sortArrow("teacher","name")}</span></button>
+        <button data-s="avg"   class="${s.by==='avg'?'active':''}">均分 <span class="arr">${sortArrow("teacher","avg")}</span></button>
+      </div>
+      <div class="dim-sort">
+        ${DIMS.map(d=>`<button data-s="${d.key}" class="${s.by===d.key?'active':''}" title="${d.label} ${d.desc}">${d.key} <span class="arr">${sortArrow("teacher",d.key)}</span></button>`).join("")}
       </div>
       <ul>
         <li class="all ${STATE.selected==='__ALL__'?'active':''}"><button data-t="__ALL__">
           <span class="tname">★ 全部老師（團隊總覽）</span>
           <span class="tscore">${STATE.rows.length}</span>
         </button></li>
-        ${sorted.map(t=>`
+        ${filtered.length === 0
+          ? `<li class="empty-search">查無符合「${escapeHtml(kw)}」的老師</li>`
+          : filtered.map(t=>{
+              const dimScore = isDimSort ? t.dimAvg?.[s.by] : null;
+              const metaExtra = isDimSort ? ` · ${s.by} ${dimScore?dimScore.toFixed(2):'—'}` : '';
+              const rightScore = isDimSort
+                ? (dimScore ? dimScore.toFixed(1) : '—')
+                : (t.avg ? t.avg.toFixed(1) : '—');
+              const rightColor = isDimSort ? scoreColor(dimScore) : scoreColor(t.avg);
+              return `
           <li class="${STATE.selected===t.name?'active':''}"><button data-t="${escapeAttr(t.name)}">
             <span style="flex:1;min-width:0">
               <span class="tname">${escapeHtml(t.name)}</span>
-              <span class="tmeta">${t.count} 筆 · avg ${t.avg?t.avg.toFixed(2):'—'}</span>
+              <span class="tmeta">${t.count} 筆 · avg ${t.avg?t.avg.toFixed(2):'—'}${metaExtra}</span>
               <span class="tbar" style="--p:${(t.count/maxCount*100)}%"></span>
             </span>
-            <span class="tscore" style="color:${scoreColor(t.avg)}">${t.avg?t.avg.toFixed(1):'—'}</span>
-          </button></li>
-        `).join("")}
+            <span class="tscore" style="color:${rightColor}">${rightScore}</span>
+          </button></li>`;
+            }).join("")}
       </ul>
     `;
   }
   else if(mode === "consultant"){
-    const consultants = aggregateByConsultant();
-    if(STATE.sort === "count") consultants.sort((a,b)=>b.count-a.count);
-    else if(STATE.sort === "avg") consultants.sort((a,b)=>(b.avg||0)-(a.avg||0));
-    else consultants.sort((a,b)=>a.name.localeCompare(b.name));
-    const maxCount = Math.max(...consultants.map(c=>c.count), 1);
+    const s = STATE.sort.consultant;
+    const kw = STATE.search.consultant;
+    const allConsultants = aggregateByConsultant();
+    let filtered = allConsultants.filter(c => matchSearch(c.name, kw));
+    filtered.sort((a,b)=>{
+      if(s.by === "name") return cmpStr(a.name, b.name, s.dir);
+      return cmpNum(a.avg, b.avg, s.dir);  // avg
+    });
+    const maxCount = Math.max(...allConsultants.map(c=>c.count), 1);
+
     el.innerHTML = tabs + `
-      <h2>顧問清單 · ${consultants.length} 位</h2>
-      <div class="sort-btns">
-        <button data-s="count" class="${STATE.sort==='count'?'active':''}">筆數</button>
-        <button data-s="avg" class="${STATE.sort==='avg'?'active':''}">分數</button>
-        <button data-s="name" class="${STATE.sort==='name'?'active':''}">名稱</button>
+      <h2>顧問清單 · ${allConsultants.length} 位${kw?` · 符合 ${filtered.length} 位`:""}</h2>
+      <div class="search-wrap">
+        <input type="search" id="tlistSearch" placeholder="🔍 搜尋顧問名稱…" value="${escapeAttr(kw)}" autocomplete="off">
+      </div>
+      <div class="col-hdr" style="grid-template-columns:1fr 1fr;display:grid">
+        <button data-s="name" class="${s.by==='name'?'active':''}">名稱 <span class="arr">${sortArrow("consultant","name")}</span></button>
+        <button data-s="avg"  class="${s.by==='avg'?'active':''}">均分 <span class="arr">${sortArrow("consultant","avg")}</span></button>
       </div>
       <ul>
         <li class="all ${STATE.selected==='__ALL__'?'active':''}"><button data-t="__ALL__">
           <span class="tname">★ 全部（團隊總覽）</span>
           <span class="tscore">${STATE.rows.length}</span>
         </button></li>
-        ${consultants.map(c=>`
+        ${filtered.length === 0
+          ? `<li class="empty-search">查無符合「${escapeHtml(kw)}」的顧問</li>`
+          : filtered.map(c=>`
           <li class="${STATE.selected==='C::'+c.name?'active':''}"><button data-t="C::${escapeAttr(c.name)}">
             <span style="flex:1;min-width:0">
               <span class="tname">${escapeHtml(c.name)}</span>
@@ -829,24 +935,38 @@ function renderTeacherList(){
               <span class="tbar" style="--p:${(c.count/maxCount*100)}%"></span>
             </span>
             <span class="tscore" style="color:${scoreColor(c.avg)}">${c.avg?c.avg.toFixed(1):'—'}</span>
-          </button></li>
-        `).join("")}
+          </button></li>`).join("")}
       </ul>
     `;
   }
   else if(mode === "date"){
-    const dates = aggregateByDate();
-    // 預設按日期倒序
-    dates.sort((a,b)=>new Date(b.date.replace(/\//g,"-")) - new Date(a.date.replace(/\//g,"-")));
-    const maxCount = Math.max(...dates.map(d=>d.count), 1);
+    const s = STATE.sort.date;
+    const kw = STATE.search.date;
+    const allDates = aggregateByDate();
+    let filtered = allDates.filter(d => matchSearch(d.date, kw) || matchSearch(d.weekday, kw));
+    filtered.sort((a,b)=>{
+      if(s.by === "avg")  return cmpNum(a.avg, b.avg, s.dir);
+      return cmpDate(a.date, b.date, s.dir); // date
+    });
+    const maxCount = Math.max(...allDates.map(d=>d.count), 1);
+
     el.innerHTML = tabs + `
-      <h2>日期清單 · ${dates.length} 天</h2>
+      <h2>日期清單 · ${allDates.length} 天${kw?` · 符合 ${filtered.length} 天`:""}</h2>
+      <div class="search-wrap">
+        <input type="search" id="tlistSearch" placeholder="🔍 搜尋日期（例：3/5 或 2026/3）…" value="${escapeAttr(kw)}" autocomplete="off">
+      </div>
+      <div class="col-hdr" style="grid-template-columns:1fr 1fr;display:grid">
+        <button data-s="date" class="${s.by==='date'?'active':''}">日期 <span class="arr">${sortArrow("date","date")}</span></button>
+        <button data-s="avg"  class="${s.by==='avg'?'active':''}">均分 <span class="arr">${sortArrow("date","avg")}</span></button>
+      </div>
       <ul>
         <li class="all ${STATE.selected==='__ALL__'?'active':''}"><button data-t="__ALL__">
           <span class="tname">★ 全部（團隊總覽）</span>
           <span class="tscore">${STATE.rows.length}</span>
         </button></li>
-        ${dates.map(d=>`
+        ${filtered.length === 0
+          ? `<li class="empty-search">查無符合「${escapeHtml(kw)}」的日期</li>`
+          : filtered.map(d=>`
           <li class="${STATE.selected==='D::'+d.date?'active':''}"><button data-t="D::${escapeAttr(d.date)}">
             <span style="flex:1;min-width:0">
               <span class="tname">${escapeHtml(d.date)} · ${d.weekday}</span>
@@ -854,19 +974,37 @@ function renderTeacherList(){
               <span class="tbar" style="--p:${(d.count/maxCount*100)}%"></span>
             </span>
             <span class="tscore" style="color:${scoreColor(d.avg)}">${d.avg?d.avg.toFixed(1):'—'}</span>
-          </button></li>
-        `).join("")}
+          </button></li>`).join("")}
       </ul>
     `;
   }
 
+  // 事件綁定
   el.querySelectorAll("[data-t]").forEach(b=>b.addEventListener("click",()=>{ STATE.selected = b.dataset.t; render(); }));
-  el.querySelectorAll("[data-s]").forEach(b=>b.addEventListener("click",()=>{ STATE.sort = b.dataset.s; renderTeacherList(); }));
+  el.querySelectorAll("[data-s]").forEach(b=>b.addEventListener("click",()=>{
+    toggleSort(mode, b.dataset.s);
+    renderTeacherList();
+  }));
   el.querySelectorAll("[data-m]").forEach(b=>b.addEventListener("click",()=>{
     STATE.viewMode = b.dataset.m;
     STATE.selected = "__ALL__"; // 切換模式時回到總覽
     render();
   }));
+  // 搜尋框：即時過濾 + 保留 focus
+  const searchInput = document.getElementById("tlistSearch");
+  if(searchInput){
+    searchInput.addEventListener("input",(e)=>{
+      STATE.search[mode] = e.target.value;
+      renderTeacherList();
+      // 重繪後要重新 focus 並把游標放回末尾
+      const ni = document.getElementById("tlistSearch");
+      if(ni){
+        ni.focus();
+        const len = ni.value.length;
+        ni.setSelectionRange(len, len);
+      }
+    });
+  }
 }
 
 // 按顧問聚合
@@ -1766,60 +1904,13 @@ function renderConsultantView(){
   container.innerHTML = `
     <div class="consultant-picker">
       <label>我是 · WHO AM I</label>
-      <select id="selfConsSelect">
-        ${consultants.map(c=>`<option value="${escapeAttr(c.name)}" ${c.name===STATE.selfConsultant?'selected':''}>${escapeHtml(c.name)} (${c.count} 筆)</option>`).join("")}
-      </select>
+      <div class="cons-btns" id="selfConsBtns">
+        ${consultants.map(c=>`<button data-name="${escapeAttr(c.name)}" class="${c.name===STATE.selfConsultant?'active':''}">${escapeHtml(c.name)} <span class="cnt">${c.count}</span></button>`).join("")}
+      </div>
       <span style="font-size:11px;color:var(--text-faint);font-family:'JetBrains Mono',monospace">選擇你的顧問名字，所有分析將以你為中心</span>
     </div>
 
     ${me? renderSelfStrictness(me):""}
-
-    <div class="grid" style="margin-top:20px">
-      <div class="recommender">
-        <h3>🎯 學員配對推薦器</h3>
-        <div class="rec-sub">輸入學員年齡 → 自動建議最佳安排日 + 該年齡×該星期表現最好的老師清單</div>
-        <div class="rec-form">
-          <div class="rec-field">
-            <label>學員年齡</label>
-            <select id="pickerAge">
-              <option value="">請選擇</option>
-              <option value="3">3 歲</option>
-              <option value="4">4 歲</option>
-              <option value="5">5 歲</option>
-              <option value="6">6 歲</option>
-              <option value="7">7 歲</option>
-              <option value="8">8 歲</option>
-              <option value="9">9 歲</option>
-              <option value="10">10 歲</option>
-              <option value="11">11 歲</option>
-              <option value="12">12 歲</option>
-              <option value="13">13+ 歲</option>
-            </select>
-          </div>
-          <div class="rec-field">
-            <label>建議老師數</label>
-            <select id="pickerTopN">
-              <option value="3">Top 3</option>
-              <option value="5" selected>Top 5</option>
-              <option value="8">Top 8</option>
-            </select>
-          </div>
-          <div class="rec-field">
-            <label>最少 Demo 筆數</label>
-            <select id="pickerMin">
-              <option value="1">≥ 1 筆</option>
-              <option value="2" selected>≥ 2 筆</option>
-              <option value="3">≥ 3 筆</option>
-            </select>
-          </div>
-          <div class="rec-field">
-            <label>&nbsp;</label>
-            <button class="reload-btn" id="pickerRun" style="background:var(--accent);color:#000;border-color:var(--accent);font-weight:700">🔍 分析並推薦</button>
-          </div>
-        </div>
-        <div id="pickerResults"></div>
-      </div>
-    </div>
 
     <div class="grid" style="margin-top:20px">
       <div class="card info">
@@ -1839,11 +1930,12 @@ function renderConsultantView(){
   `;
 
   // 綁定事件
-  document.getElementById("selfConsSelect").addEventListener("change",(e)=>{
-    STATE.selfConsultant = e.target.value;
-    render();
+  document.querySelectorAll("#selfConsBtns button[data-name]").forEach(b=>{
+    b.addEventListener("click",()=>{
+      STATE.selfConsultant = b.dataset.name;
+      render();
+    });
   });
-  document.getElementById("pickerRun").addEventListener("click", runPicker);
   document.querySelectorAll(".aw-cell[data-key]").forEach(el=>{
     el.addEventListener("click",()=>showAgeWeekdayDetail(el.dataset.key));
   });
@@ -2284,6 +2376,53 @@ function renderQAView(){
     </div>
 
     <div class="grid" style="margin-bottom:20px">
+      <div class="recommender">
+        <h3>🎯 學員配對推薦器</h3>
+        <div class="rec-sub">輸入學員年齡 → 自動建議最佳安排日 + 該年齡×該星期表現最好的老師清單</div>
+        <div class="rec-form">
+          <div class="rec-field">
+            <label>學員年齡</label>
+            <select id="pickerAge">
+              <option value="">請選擇</option>
+              <option value="3">3 歲</option>
+              <option value="4">4 歲</option>
+              <option value="5">5 歲</option>
+              <option value="6">6 歲</option>
+              <option value="7">7 歲</option>
+              <option value="8">8 歲</option>
+              <option value="9">9 歲</option>
+              <option value="10">10 歲</option>
+              <option value="11">11 歲</option>
+              <option value="12">12 歲</option>
+              <option value="13">13+ 歲</option>
+            </select>
+          </div>
+          <div class="rec-field">
+            <label>建議老師數</label>
+            <select id="pickerTopN">
+              <option value="3">Top 3</option>
+              <option value="5" selected>Top 5</option>
+              <option value="8">Top 8</option>
+            </select>
+          </div>
+          <div class="rec-field">
+            <label>最少 Demo 筆數</label>
+            <select id="pickerMin">
+              <option value="1">≥ 1 筆</option>
+              <option value="2" selected>≥ 2 筆</option>
+              <option value="3">≥ 3 筆</option>
+            </select>
+          </div>
+          <div class="rec-field">
+            <label>&nbsp;</label>
+            <button class="reload-btn" id="pickerRun" style="background:var(--accent);color:#000;border-color:var(--accent);font-weight:700">🔍 分析並推薦</button>
+          </div>
+        </div>
+        <div id="pickerResults"></div>
+      </div>
+    </div>
+
+    <div class="grid" style="margin-bottom:20px">
       <div class="card info">
         <h3>📢 教務反饋追蹤 <span class="sub">依配合度排序 · 點擊查看完整戰力表</span></h3>
         ${renderFeedbackTracking()}
@@ -2311,6 +2450,10 @@ function renderQAView(){
       </div>
     </div>
   `;
+
+  // 綁定配對推薦器
+  const pickerBtn = document.getElementById("pickerRun");
+  if(pickerBtn) pickerBtn.addEventListener("click", runPicker);
 
   // 綁定所有 rank-row 點擊跳轉
   document.querySelectorAll(".rank-row[data-teacher]").forEach(el=>{
